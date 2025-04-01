@@ -218,6 +218,9 @@ class Text2PhonemeSequence:
             for i in range(len(phones)):
                 if list_words_batch[j][i] in self.punctuation:
                     phones[i] = list_words_batch[j][i]
+                # Áp dụng postprocess_phonemes cho phoneme
+                if "vie" in self.language:
+                    phones[i] = self.postprocess_phonemes(list_words_batch[j][i], phones[i])
                 self.phone_dict[list_words_batch[j][i]] = [phones[i]]
         for w in self.phone_dict.keys():
             try:
@@ -238,7 +241,10 @@ class Text2PhonemeSequence:
                 list_words[i] = self.phone_dict[
                     list_words[i].replace(seperate_syllabel_token, " ").lower()
                 ][1]
-            f.write(prefix + "|" + " ▁ ".join(list_words))
+            if len(line) == 3: # for multi speakers
+                f.write(prefix + "|" + line[1] + "|" + " ▁ ".join(list_words))
+            else:
+                f.write(prefix + "|" + " ▁ ".join(list_words))
             f.write("\n")
         f.close()
 
@@ -314,3 +320,16 @@ class Text2PhonemeSequence:
                         phonemes = phonemes.replace(old_phoneme, new_phoneme)
 
         return phonemes
+
+
+if __name__ == "__main__":
+
+    model = Text2PhonemeSequence(
+        g2p_dict_path = "vie.tsv",
+        device = "cpu",
+    )
+    model.infer_dataset(
+        input_file="text2phonemesequence/input.txt",
+        output_file="text2phonemesequence/output.txt",
+        batch_size=64,
+    )
