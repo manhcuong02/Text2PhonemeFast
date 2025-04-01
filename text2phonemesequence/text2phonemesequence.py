@@ -25,7 +25,6 @@ class Text2PhonemeSequence:
             list('.?!,:;-()[]{}<>"') + list("'/‘”“/&#~@^|") + ["...", "*"]
         )
         self.segment_tool = Tokenizer()
-        self.language = language
         self.phoneme_length = {
             "msa.tsv": 27,
             "amh.tsv": 28,
@@ -137,14 +136,23 @@ class Text2PhonemeSequence:
             "fao.tsv": 42,
             "dsb.tsv": 29,
         }
+
         self.phone_dict = {}
-        if g2p_dict_path is None:
-            os.system(
-                "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
-                + language
-                + ".tsv"
-            )
-            g2p_dict_path = "./" + language + ".tsv"
+
+        if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
+            if os.path.exists("./" + language + ".tsv"):
+                g2p_dict_path = "./" + language + ".tsv"
+            else:
+                os.system(
+                    "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
+                    + language
+                    + ".tsv"
+                )
+                g2p_dict_path = "./" + language + ".tsv"
+        else:
+            language = g2p_dict_path.split("/")[-1].split(".")[0]
+
+        self.language = language
 
         if os.path.exists(g2p_dict_path):
             f = open(g2p_dict_path, "r", encoding="utf-8")
@@ -219,8 +227,6 @@ class Text2PhonemeSequence:
                 if list_words_batch[j][i] in self.punctuation:
                     phones[i] = list_words_batch[j][i]
                 # Áp dụng postprocess_phonemes cho phoneme
-                if "vie" in self.language:
-                    phones[i] = self.postprocess_phonemes(list_words_batch[j][i], phones[i])
                 self.phone_dict[list_words_batch[j][i]] = [phones[i]]
         for w in self.phone_dict.keys():
             try:
@@ -238,10 +244,15 @@ class Text2PhonemeSequence:
             prefix = line[0]
             list_words = line[-1].split(" ")
             for i in range(len(list_words)):
-                list_words[i] = self.phone_dict[
-                    list_words[i].replace(seperate_syllabel_token, " ").lower()
-                ][1]
-            if len(line) == 3: # for multi speakers
+                words = list_words[i].replace(seperate_syllabel_token, " ").lower()
+                phoneme = self.phone_dict[words][1]
+                
+                if "vie" in self.language:
+                    phoneme = self.postprocess_phonemes(words, phoneme, is_tokenized=True)
+                    
+                list_words[i] = phoneme
+
+            if len(line) == 3:  # for multi speakers
                 f.write(prefix + "|" + line[1] + "|" + " ▁ ".join(list_words))
             else:
                 f.write(prefix + "|" + " ▁ ".join(list_words))
@@ -293,7 +304,7 @@ class Text2PhonemeSequence:
             list_phones[i] = segmented_phone
         return " ▁ ".join(list_phones)
 
-    def postprocess_phonemes(self, text: str, phonemes: str) -> str:
+    def postprocess_phonemes(self, text: str, phonemes: str, is_tokenized = False) -> str:
         phoneme_replacements = {
             r"^(?=.*uy)(?!.*ui).*$": {
                 "uj": "wi",
@@ -316,7 +327,14 @@ class Text2PhonemeSequence:
                         new_phoneme = old_phoneme
                         for key, value in replacements.items():
                             new_phoneme = new_phoneme.replace(key, value)
-
+                        if is_tokenized:
+                            try:
+                                new_phoneme = self.segment_tool(new_phoneme, ipa=True)
+                                old_phoneme = self.segment_tool(old_phoneme, ipa=True)
+                            except:
+                                new_phoneme = self.segment_tool(new_phoneme)
+                                old_phoneme = self.segment_tool(old_phoneme)
+                                
                         phonemes = phonemes.replace(old_phoneme, new_phoneme)
 
         return phonemes
@@ -325,8 +343,8 @@ class Text2PhonemeSequence:
 if __name__ == "__main__":
 
     model = Text2PhonemeSequence(
-        g2p_dict_path = "vie.tsv",
-        device = "cpu",
+        g2p_dict_path="vie-n.tsv",
+        device="cpu",
     )
     model.infer_dataset(
         input_file="text2phonemesequence/input.txt",
