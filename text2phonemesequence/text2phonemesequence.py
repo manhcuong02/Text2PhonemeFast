@@ -152,6 +152,11 @@ class Text2PhonemeSequence:
         else:
             language = g2p_dict_path.split("/")[-1].split(".")[0]
 
+        if f"{language}.tsv" not in self.phoneme_length:
+            raise ValueError(
+                f"Language {language} not supported. Please check the phoneme length dictionary."
+            )
+        
         self.language = language
 
         if os.path.exists(g2p_dict_path):
@@ -265,26 +270,33 @@ class Text2PhonemeSequence:
         elif text in self.punctuation:
             return text
         else:
-            out = self.tokenizer(
-                "<" + self.language + ">: " + text,
-                padding=True,
-                add_special_tokens=False,
-                return_tensors="pt",
-            )
-            if "cuda" in self.device:
-                out["input_ids"] = out["input_ids"].to(self.device)
-                out["attention_mask"] = out["attention_mask"].to(self.device)
-            if self.language + ".tsv" not in self.phoneme_length.keys():
-                self.phoneme_length[self.language + ".tsv"] = 50
-            preds = self.model.generate(
-                **out,
-                num_beams=1,
-                max_length=self.phoneme_length[self.language + ".tsv"]
-            )
-            phones = self.tokenizer.batch_decode(
-                preds.tolist(), skip_special_tokens=True
-            )
-            return phones[0]
+            if all([t in self.phone_dict for t in text.split(" ")]):
+                phones = ""
+                for t in text.split(" "):
+                    if t in self.phone_dict:
+                        phones += self.phone_dict[t][0]
+                return phones
+            else:
+                out = self.tokenizer(
+                    "<" + self.language + ">: " + text,
+                    padding=True,
+                    add_special_tokens=False,
+                    return_tensors="pt",
+                )
+                if "cuda" in self.device:
+                    out["input_ids"] = out["input_ids"].to(self.device)
+                    out["attention_mask"] = out["attention_mask"].to(self.device)
+                if self.language + ".tsv" not in self.phoneme_length.keys():
+                    self.phoneme_length[self.language + ".tsv"] = 50
+                preds = self.model.generate(
+                    **out,
+                    num_beams=1,
+                    max_length=self.phoneme_length[self.language + ".tsv"]
+                )
+                phones = self.tokenizer.batch_decode(
+                    preds.tolist(), skip_special_tokens=True
+                )
+                return phones[0]
 
     def infer_sentence(self, sentence="", seperate_syllabel_token="_"):
         list_words = sentence.split(" ")
