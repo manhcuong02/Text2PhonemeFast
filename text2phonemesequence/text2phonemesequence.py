@@ -150,7 +150,8 @@ class Text2PhonemeSequence:
                 )
                 g2p_dict_path = "./" + language + ".tsv"
         else:
-            language = g2p_dict_path.split("/")[-1].split(".")[0]
+            if language is None or len(language) == 0:
+                language = g2p_dict_path.split("/")[-1].split(".")[0]
 
         if f"{language}.tsv" not in self.phoneme_length:
             raise ValueError(
@@ -280,6 +281,7 @@ if __name__ == "__main__":
     model = Text2PhonemeSequence(
         g2p_dict_path="vie-n.unique.tsv",
         device="cpu",
+        language = "vie-n",
     )
     # model.infer_dataset(
     #     input_file="input.txt",
