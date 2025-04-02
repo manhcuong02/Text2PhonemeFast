@@ -156,7 +156,7 @@ class Text2PhonemeSequence:
             raise ValueError(
                 f"Language {language} not supported. Please check the phoneme length dictionary."
             )
-        
+
         self.language = language
 
         if os.path.exists(g2p_dict_path):
@@ -176,101 +176,35 @@ class Text2PhonemeSequence:
         input_file="",
         seperate_syllabel_token="_",
         output_file="",
-        batch_size=64,
+        batch_size = 1,
     ):
-        f = open(input_file, "r")
-        list_lines = f.readlines()
-        f.close()
-        list_words = []
         print("Building vocabulary!")
-        for line in list_lines:
-            words = line.strip().split("|")[-1].split(" ")
-            for w in words:
-                w = w.replace(seperate_syllabel_token, " ").lower()
-                if w not in self.phone_dict.keys():
-                    list_words.append(w)
-        list_words_p = ["<" + self.language + ">: " + i for i in list_words]
-        list_words_p_batch = []
-        list_words_batch = []
-        temp_list = []
-        temp_list_raw = []
-        for m in range(len(list_words_p)):
-            temp_list.append(list_words_p[m])
-            temp_list_raw.append(list_words[m])
-            if len(temp_list) == batch_size:
-                list_words_p_batch.append(temp_list)
-                temp_list = []
-                list_words_batch.append(temp_list_raw)
-                temp_list_raw = []
-        if len(temp_list) != 0:
-            list_words_p_batch.append(temp_list)
-            list_words_batch.append(temp_list_raw)
 
-        for j in range(len(list_words_p_batch)):
-            out = self.tokenizer(
-                list_words_p_batch[j],
-                padding=True,
-                add_special_tokens=False,
-                return_tensors="pt",
-            )
-            if "cuda" in self.device:
-                out["input_ids"] = out["input_ids"].to(self.device)
-                out["attention_mask"] = out["attention_mask"].to(self.device)
-            if self.language + ".tsv" not in self.phoneme_length.keys():
-                self.phoneme_length[self.language + ".tsv"] = 50
-            preds = self.model.generate(
-                **out,
-                num_beams=1,
-                max_length=self.phoneme_length[self.language + ".tsv"]
-            )
-            phones = self.tokenizer.batch_decode(
-                preds.tolist(), skip_special_tokens=True
-            )
-            assert len(phones) == len(list_words_p_batch[j])
+        # Write results to output file
+        with open(input_file, "r") as f:
+            list_lines = f.readlines()
 
-            for i in range(len(phones)):
-                if list_words_batch[j][i] in self.punctuation:
-                    phones[i] = list_words_batch[j][i]
-                # Áp dụng postprocess_phonemes cho phoneme
-                self.phone_dict[list_words_batch[j][i]] = [phones[i]]
-        for w in self.phone_dict.keys():
-            try:
-                segmented_phone = self.segment_tool(self.phone_dict[w][0], ipa=True)
-            except:
-                segmented_phone = self.segment_tool(self.phone_dict[w][0])
-            self.phone_dict[w].append(segmented_phone)
+        with open(output_file, "w") as f:
+            for line in tqdm(list_lines):
+                line = line.strip().split("|")
+                prefix = line[0]
+                text = line[-1]
 
-        f = open(input_file, "r")
-        list_lines = f.readlines()
-        f.close()
-        f = open(output_file, "w")
-        for line in tqdm(list_lines):
-            line = line.strip().split("|")
-            prefix = line[0]
-            list_words = line[-1].split(" ")
-            for i in range(len(list_words)):
-                words = list_words[i].replace(seperate_syllabel_token, " ").lower()
-                phoneme = self.phone_dict[words][1]
-                
-                if "vie" in self.language:
-                    phoneme = self.postprocess_phonemes(words, phoneme, is_tokenized=True)
-                    
-                list_words[i] = phoneme
+                phonemes = self.infer_sentence(text, seperate_syllabel_token)
 
-            if len(line) == 3:  # for multi speakers
-                f.write(prefix + "|" + line[1] + "|" + " ▁ ".join(list_words))
-            else:
-                f.write(prefix + "|" + " ▁ ".join(list_words))
-            f.write("\n")
-        f.close()
+                if len(line) == 3:  # for multi speakers
+                    f.write(prefix + "|" + line[1] + "|" + phonemes)
+                else:
+                    f.write(prefix + "|" + phonemes)
+                f.write("\n")
 
-    def t2p(self, text: str) -> str:
-        if text in self.phone_dict:
+    def t2p(self, text: str, using_model: bool = True) -> str:
+        if text in self.phone_dict and using_model is False:
             return self.phone_dict[text][0]
         elif text in self.punctuation:
             return text
         else:
-            if all([t in self.phone_dict for t in text.split(" ")]):
+            if all([t in self.phone_dict for t in text.split(" ")]) and using_model is False:
                 phones = ""
                 for t in text.split(" "):
                     if t in self.phone_dict:
@@ -291,7 +225,7 @@ class Text2PhonemeSequence:
                 preds = self.model.generate(
                     **out,
                     num_beams=1,
-                    max_length=self.phoneme_length[self.language + ".tsv"]
+                    max_length=self.phoneme_length[self.language + ".tsv"],
                 )
                 phones = self.tokenizer.batch_decode(
                     preds.tolist(), skip_special_tokens=True
@@ -316,7 +250,7 @@ class Text2PhonemeSequence:
             list_phones[i] = segmented_phone
         return " ▁ ".join(list_phones)
 
-    def postprocess_phonemes(self, text: str, phonemes: str, is_tokenized = False) -> str:
+    def postprocess_phonemes(self, text: str, phonemes: str) -> str:
         phoneme_replacements = {
             r"^(?=.*uy)(?!.*ui).*$": {
                 "uj": "wi",
@@ -335,19 +269,8 @@ class Text2PhonemeSequence:
                 for t in text.split():
                     match = re.search(pattern, unidecode(t).lower())
                     if match:
-                        old_phoneme: str = self.t2p(t)
-                        new_phoneme = old_phoneme
                         for key, value in replacements.items():
-                            new_phoneme = new_phoneme.replace(key, value)
-                        if is_tokenized:
-                            try:
-                                new_phoneme = self.segment_tool(new_phoneme, ipa=True)
-                                old_phoneme = self.segment_tool(old_phoneme, ipa=True)
-                            except:
-                                new_phoneme = self.segment_tool(new_phoneme)
-                                old_phoneme = self.segment_tool(old_phoneme)
-                                
-                        phonemes = phonemes.replace(old_phoneme, new_phoneme)
+                            phonemes = phonemes.replace(key, value)
 
         return phonemes
 
@@ -355,11 +278,11 @@ class Text2PhonemeSequence:
 if __name__ == "__main__":
 
     model = Text2PhonemeSequence(
-        g2p_dict_path="vie-n.tsv",
+        g2p_dict_path="vie-n.unique.tsv",
         device="cpu",
     )
-    model.infer_dataset(
-        input_file="text2phonemesequence/input.txt",
-        output_file="text2phonemesequence/output.txt",
-        batch_size=64,
-    )
+    # model.infer_dataset(
+    #     input_file="input.txt",
+    #     output_file="new_output.txt",
+    # )
+    model.infer_sentence("roong")
