@@ -280,9 +280,11 @@ class Text2PhonemeSequence:
                     preds.tolist(), skip_special_tokens=True
                 )
 
-                self.missing_phonemes.append({text: phones[0]})
+                phoneme = self.postprocess_phonemes(text, phones[0])
+                
+                self.missing_phonemes.append({text: phoneme})
 
-                return phones[0]
+                return phoneme
 
     def infer_sentence(
         self,
@@ -296,8 +298,6 @@ class Text2PhonemeSequence:
             list_words[i] = list_words[i].replace(seperate_syllabel_token, " ")
             phoneme = self.t2p(list_words[i])
             list_phones.append(phoneme)
-
-            list_phones[-1] = self.postprocess_phonemes(list_words[i], list_phones[-1])
 
         for i in range(len(list_phones)):
             try:
