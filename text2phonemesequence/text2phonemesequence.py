@@ -160,8 +160,52 @@ class Text2PhonemeSequence:
 
         self.language = language
 
-        if os.path.exists(g2p_dict_path):
-            f = open(g2p_dict_path, "r", encoding="utf-8")
+        self.g2p_dict_path = g2p_dict_path
+        self.load_g2p()
+
+        self.missing_phonemes: list[dict] = []
+
+    def save_missing_phonemes(self):
+        """
+        Lưu các phoneme chưa tồn tại vào từ điển G2P và làm sạch danh sách phoneme thiếu.
+
+        Hàm này đọc nội dung từ file từ điển G2P hiện tại, sau đó thêm các phoneme mới (các phoneme không tồn tại
+        trong từ điển) vào cuối file. Sau khi thêm phoneme, danh sách phoneme thiếu sẽ được làm sạch.
+
+        Args:
+            None: Hàm này sử dụng các thuộc tính của đối tượng để thao tác với từ điển G2P và danh sách phoneme thiếu.
+
+        Returns:
+            None: Hàm này không trả về giá trị gì. Từ điển G2P sẽ được cập nhật và danh sách phoneme thiếu được làm sạch.
+
+        """
+        # Mở file từ điển G2P để đọc nội dung
+        with open(self.g2p_dict_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        # Thêm phoneme thiếu vào từ điển G2P
+        for item in self.missing_phonemes:
+            for text, phoneme in item.items():
+                lines.append(f"{text}\t{phoneme}\n")
+                print(f"Add new phoneme: {text} -> {phoneme}")
+
+        # Lưu các dòng mới vào file từ điển
+        with open(self.g2p_dict_path, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+
+        # Làm sạch danh sách phoneme thiếu
+        self.missing_phonemes = []
+
+        # load g2p dict again
+        self.phone_dict = {}
+        self.load_g2p()
+
+    def load_g2p(self):
+        """
+        Load G2P dictionary from file.
+        """
+        if os.path.exists(self.g2p_dict_path):
+            f = open(self.g2p_dict_path, "r", encoding="utf-8")
             list_words = f.read().strip().split("\n")
             f.close()
             for word_phone in list_words:
@@ -177,7 +221,8 @@ class Text2PhonemeSequence:
         input_file="",
         seperate_syllabel_token="_",
         output_file="",
-        batch_size = 1,
+        batch_size=1,
+        save_missing_phonemes=False,
     ):
         print("Building vocabulary!")
 
@@ -199,13 +244,16 @@ class Text2PhonemeSequence:
                     f.write(prefix + "|" + phonemes)
                 f.write("\n")
 
-    def t2p(self, text: str, using_model: bool = True) -> str:
-        if text in self.phone_dict and using_model is False:
+        if save_missing_phonemes:
+            self.save_missing_phonemes()
+
+    def t2p(self, text: str) -> str:
+        if text in self.phone_dict:
             return self.phone_dict[text][0]
         elif text in self.punctuation:
             return text
         else:
-            if all([t in self.phone_dict for t in text.split(" ")]) and using_model is False:
+            if all([t in self.phone_dict for t in text.split(" ")]):
                 phones = ""
                 for t in text.split(" "):
                     if t in self.phone_dict:
@@ -231,10 +279,18 @@ class Text2PhonemeSequence:
                 phones = self.tokenizer.batch_decode(
                     preds.tolist(), skip_special_tokens=True
                 )
+
+                self.missing_phonemes.append({text: phones[0]})
+
                 return phones[0]
 
-    def infer_sentence(self, sentence="", seperate_syllabel_token="_"):
-        list_words = sentence.split(" ")
+    def infer_sentence(
+        self,
+        sentence="",
+        seperate_syllabel_token="_",
+        save_missing_phonemes=False,
+    ):
+        list_words = sentence.lower().split(" ")
         list_phones = []
         for i in range(len(list_words)):
             list_words[i] = list_words[i].replace(seperate_syllabel_token, " ")
@@ -249,6 +305,10 @@ class Text2PhonemeSequence:
             except:
                 segmented_phone = self.segment_tool(list_phones[i])
             list_phones[i] = segmented_phone
+
+        if save_missing_phonemes:
+            self.save_missing_phonemes()
+
         return " ▁ ".join(list_phones)
 
     def postprocess_phonemes(self, text: str, phonemes: str) -> str:
@@ -265,7 +325,9 @@ class Text2PhonemeSequence:
             },
         }
 
-        if "vie" in self.language:
+        # chỉ dùng cho file vie-n.tsv hoặc vie-n.unique.tsv
+        # không cho phép với file vie-n.mix-eng-us.tsv
+        if "vie" in self.language and "mix" not in self.g2p_dict_path:
             for pattern, replacements in phoneme_replacements.items():
                 for t in text.split():
                     match = re.search(pattern, unidecode(t).lower())
@@ -278,13 +340,22 @@ class Text2PhonemeSequence:
 
 if __name__ == "__main__":
 
-    model = Text2PhonemeSequence(
-        g2p_dict_path="vie-n.unique.tsv",
-        device="cpu",
-        language = "vie-n",
-    )
-    # model.infer_dataset(
-    #     input_file="input.txt",
-    #     output_file="new_output.txt",
+    # model = Text2PhonemeSequence(
+    #     g2p_dict_path="vie-n.unique.tsv",
+    #     device="cpu",
+    #     language="vie-n",
     # )
-    model.infer_sentence("roong")
+    # # model.infer_dataset(
+    # #     input_file="input.txt",
+    # #     output_file="new_output.txt",
+    # # )
+
+    # print(model.infer_sentence('lắk', save_missing_phonemes=True))
+
+    model = Text2PhonemeSequence(
+        g2p_dict_path="eng-us.unique.tsv",
+        device="cpu",
+        language="eng-us",
+    )
+    
+    print(model.infer_sentence("null prof", save_missing_phonemes=True))
