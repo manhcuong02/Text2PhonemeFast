@@ -17,7 +17,8 @@ This repository is an enhanced version of the original Text2PhonemeSequence libr
 - ✅ Applied phoneme post-processing to the dataset inference method (improved consistency)
 - ✅ Refactored codebase for better organization and maintainability
 - ✅ Created a unique phoneme dictionary per word (instead of segmenting) for improved speed
-- 🔄 In progress: Merging Vietnamese and English TSV dictionaries for easier multilingual support
+- ✅ Allow saving words that have never appeared in the G2P dictionary before, so that they do not need to be processed again through the pretrained G2P model, which helps improve speed
+- ✅ Merging Vietnamese and English TSV dictionaries for easier multilingual support (Prioritize Vietnamese in case of overlapping sounds, with an estimated 405 overlapping sounds).
 
 ## Installation <a name="install"></a>
 
