@@ -1,5 +1,6 @@
 import os
 import re
+from typing import Optional
 
 from segments import Tokenizer
 from tqdm import tqdm
@@ -247,7 +248,11 @@ class Text2PhonemeSequence:
         if save_missing_phonemes:
             self.save_missing_phonemes()
 
-    def t2p(self, text: str) -> str:
+    def t2p(self, text: str, language: Optional[str] = None) -> str:
+        
+        if language is None:
+            language = self.language
+        
         if text in self.phone_dict:
             return self.phone_dict[text][0]
         elif text in self.punctuation:
@@ -261,7 +266,7 @@ class Text2PhonemeSequence:
                 return phones
             else:
                 out = self.tokenizer(
-                    "<" + self.language + ">: " + text,
+                    "<" + language + ">: " + text,
                     padding=True,
                     add_special_tokens=False,
                     return_tensors="pt",
@@ -269,12 +274,12 @@ class Text2PhonemeSequence:
                 if "cuda" in self.device:
                     out["input_ids"] = out["input_ids"].to(self.device)
                     out["attention_mask"] = out["attention_mask"].to(self.device)
-                if self.language + ".tsv" not in self.phoneme_length.keys():
-                    self.phoneme_length[self.language + ".tsv"] = 50
+                if language + ".tsv" not in self.phoneme_length.keys():
+                    self.phoneme_length[language + ".tsv"] = 50
                 preds = self.model.generate(
                     **out,
                     num_beams=1,
-                    max_length=self.phoneme_length[self.language + ".tsv"],
+                    max_length=self.phoneme_length[language + ".tsv"],
                 )
                 phones = self.tokenizer.batch_decode(
                     preds.tolist(), skip_special_tokens=True
@@ -291,12 +296,13 @@ class Text2PhonemeSequence:
         sentence="",
         seperate_syllabel_token="_",
         save_missing_phonemes=False,
+        language: Optional[str] = None, # Thêm language để tùy chọn cách đọc từ viết tắt
     ):
         list_words = sentence.lower().split(" ")
         list_phones = []
         for i in range(len(list_words)):
             list_words[i] = list_words[i].replace(seperate_syllabel_token, " ")
-            phoneme = self.t2p(list_words[i])
+            phoneme = self.t2p(list_words[i], language)
             list_phones.append(phoneme)
 
         for i in range(len(list_phones)):
@@ -358,4 +364,4 @@ if __name__ == "__main__":
         language="eng-us",
     )
     
-    print(model.infer_sentence("null prof", save_missing_phonemes=True))
+    print(model.infer_sentence("openai", save_missing_phonemes=True))
