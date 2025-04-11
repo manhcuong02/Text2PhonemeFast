@@ -168,17 +168,18 @@ class Text2PhonemeSequence:
 
     def save_missing_phonemes(self):
         """
-        Lưu các phoneme chưa tồn tại vào từ điển G2P và làm sạch danh sách phoneme thiếu.
-
-        Hàm này đọc nội dung từ file từ điển G2P hiện tại, sau đó thêm các phoneme mới (các phoneme không tồn tại
-        trong từ điển) vào cuối file. Sau khi thêm phoneme, danh sách phoneme thiếu sẽ được làm sạch.
-
+        Save missing phonemes to the G2P dictionary and clear the missing list.
+    
+        This function reads the current G2P dictionary file and appends any new phoneme entries 
+        (i.e., phonemes not already present in the dictionary) to the end of the file. 
+        After updating the dictionary, it clears the internal list of missing phonemes.
+    
         Args:
-            None: Hàm này sử dụng các thuộc tính của đối tượng để thao tác với từ điển G2P và danh sách phoneme thiếu.
-
+            None – This method operates on the instance's attributes, including the G2P dictionary path 
+            and the list of missing phonemes.
+    
         Returns:
-            None: Hàm này không trả về giá trị gì. Từ điển G2P sẽ được cập nhật và danh sách phoneme thiếu được làm sạch.
-
+            None – The function performs in-place updates to the G2P dictionary file and internal phoneme state.
         """
         # Mở file từ điển G2P để đọc nội dung
         with open(self.g2p_dict_path, "r", encoding="utf-8") as f:
@@ -356,27 +357,23 @@ class Text2PhonemeSequence:
 
 if __name__ == "__main__":
 
-    # model = Text2PhonemeSequence(
-    #     g2p_dict_path="vie-n.unique.tsv",
-    #     device="cpu",
-    #     language="vie-n",
-    # )
-    # # model.infer_dataset(
-    # #     input_file="input.txt",
-    # #     output_file="new_output.txt",
-    # # )
-
-    # print(model.infer_sentence('lắk', save_missing_phonemes=True))
-
     model = Text2PhonemeSequence(
-        g2p_dict_path="eng-us.unique.tsv",
+        g2p_dict_path="vie-n.unique.tsv",
         device="cpu",
-        language="eng-us",
+        language="vie-n",
     )
 
-    print(
-        model.infer_sentence(
-            "e-learning e-book e-commerce eco-friendly",
-            save_missing_phonemes=True,
-        )
-    )
+    print(model.infer_sentence('sinh ga po', save_missing_phonemes=True))
+
+    # model = Text2PhonemeSequence(
+    #     g2p_dict_path="eng-us.unique.tsv",
+    #     device="cpu",
+    #     language="eng-us",
+    # )
+
+    # print(
+    #     model.infer_sentence(
+    #         "e-learning e-book e-commerce eco-friendly",
+    #         save_missing_phonemes=True,
+    #     )
+    # )
