@@ -22,6 +22,18 @@ This repository is an enhanced and faster version of the original [Text2PhonemeS
 - ✅ Allow saving words that have never appeared in the G2P dictionary before, so that they do not need to be processed again through the pretrained G2P model, which helps improve speed
 - ✅ Merging Vietnamese and English TSV dictionaries for easier multilingual support (Prioritize Vietnamese in case of overlapping sounds, with an estimated 405 overlapping sounds).
 
+### Supported Dictionaries
+
+This library supports several specialized pronunciation dictionaries:
+
+- **Standard dictionaries** - Automatically downloaded from CharsiuG2P when needed (e.g., `vie-n.tsv`, `eng-us.tsv`)
+- **Enhanced dictionaries** - Specifically optimized for better performance:
+  - `vie-n.unique.tsv` - Vietnamese dictionary with optimized pronunciation
+  - `eng-us.unique.tsv` - English dictionary with optimized pronunciation
+  - `vie-n.mix-eng-us.tsv` - Mixed Vietnamese-English dictionary for multilingual support
+
+When using the `.unique` or `.mix` dictionaries, the library will automatically download them from our repository. These specialized dictionaries provide better pronunciation accuracy, especially for Vietnamese.
+
 ## Installation <a name="install"></a>
 
 To install **text2phonemefast**:
