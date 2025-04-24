@@ -1,0 +1,6 @@
+include LICENSE.txt
+include README.md
+include requirements.txt
+include vie-n.unique.tsv
+include eng-us.unique.tsv
+include vie-n.mix-eng-us.tsv

@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
 
 
-class Text2PhonemeSequence:
+class Text2PhonemeFast:
     def __init__(
         self,
         pretrained_g2p_model="charsiu/g2p_multilingual_byT5_small_100",
@@ -225,7 +225,6 @@ class Text2PhonemeSequence:
         input_file="",
         seperate_syllabel_token="_",
         output_file="",
-        batch_size=1,
         save_missing_phonemes=False,
     ):
         print("Building vocabulary!")
@@ -253,6 +252,7 @@ class Text2PhonemeSequence:
 
     def t2p(self, text: str, language: Optional[str] = None) -> str:
 
+        # Nếu muốn chỉ định nghĩa cách đọc từ viết tắt hoặc từ không có trong từ điển
         if language is None:
             language = self.language
 
@@ -299,10 +299,20 @@ class Text2PhonemeSequence:
         sentence="",
         seperate_syllabel_token="_",
         save_missing_phonemes=False,
-        language: Optional[
-            str
-        ] = None,  # Thêm language để tùy chọn cách đọc từ viết tắt
+        language: Optional[str] = None,
     ):
+        """
+        Infer phonemes for a given sentence.
+        
+        Args:
+            sentence (str): The input sentence to be converted to phonemes.
+            seperate_syllabel_token (str): The token used to separate syllables in the output.
+            save_missing_phonemes (bool): Whether to save missing phonemes to the G2P dictionary.
+            language (str): The language code for the G2P model. If None, uses the default language.
+        
+        Returns:
+            str: The phoneme representation of the input sentence.
+        """
         list_words = sentence.lower().split(" ")
         list_phones = []
 
@@ -329,6 +339,9 @@ class Text2PhonemeSequence:
         return " ▁ ".join(list_phones)
 
     def postprocess_phonemes(self, text: str, phonemes: str) -> str:
+        
+        # Phoneme post-processing for specific languages.
+        # This is a workaround for some specific cases in Vietnamese phonemes.
         phoneme_replacements = {
             r"^(?=.*uy)(?!.*ui).*$": {
                 "uj": "wi",
@@ -357,23 +370,11 @@ class Text2PhonemeSequence:
 
 if __name__ == "__main__":
 
-    model = Text2PhonemeSequence(
+    model = Text2PhonemeFast(
         g2p_dict_path="vie-n.unique.tsv",
         device="cpu",
         language="vie-n",
     )
 
-    print(model.infer_sentence('sinh ga po', save_missing_phonemes=True))
+    print(model.infer_sentence('xin chào tôi là Mạnh Cường .', save_missing_phonemes=True))
 
-    # model = Text2PhonemeSequence(
-    #     g2p_dict_path="eng-us.unique.tsv",
-    #     device="cpu",
-    #     language="eng-us",
-    # )
-
-    # print(
-    #     model.infer_sentence(
-    #         "e-learning e-book e-commerce eco-friendly",
-    #         save_missing_phonemes=True,
-    #     )
-    # )

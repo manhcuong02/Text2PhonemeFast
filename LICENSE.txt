@@ -187,6 +187,8 @@
       identification within third-party archives.
 
    Copyright (C) 2021 VinAI
+   Copyright (C) 2025 Nguyễn Mạnh Cường
+   This fork contains modifications to the original work.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

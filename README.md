@@ -1,6 +1,8 @@
-# Text2PhonemeSequence: A Python Library for Text to Phoneme Conversion
+# text2phonemefast: A Python Library for Fast Text to Phoneme Conversion
 
-This repository is an enhanced version of the original Text2PhonemeSequence library, which converts text to phoneme sequences for [XPhoneBERT](https://github.com/VinAIResearch/XPhoneBERT).
+> **Fork Notice**: This repository is maintained by [Nguyễn Mạnh Cường](https://github.com/manhcuong02) as a fork with enhancements from the original [Text2PhonemeSequence](https://github.com/thelinhbkhn2014/Text2PhonemeSequence) library created by Linh The Nguyen.
+
+This repository is an enhanced and faster version of the original [Text2PhonemeSequence](https://github.com/thelinhbkhn2014/Text2PhonemeSequence) library, which converts text to phoneme sequences for [XPhoneBERT](https://github.com/VinAIResearch/XPhoneBERT).
 
 ## Key Improvements
 
@@ -22,10 +24,10 @@ This repository is an enhanced version of the original Text2PhonemeSequence libr
 
 ## Installation <a name="install"></a>
 
-To install **Text2PhonemeSequence**:
+To install **text2phonemefast**:
 
 ```
-$ pip install text2phonemesequence
+$ pip install text2phonemefast
 ```
 
 ## Usage Examples <a name="example"></a>
@@ -35,14 +37,32 @@ This library uses [CharsiuG2P](https://github.com/lingjzhu/CharsiuG2P/tree/main)
 **Note**: For languages where words are not separated by spaces (e.g., Vietnamese and Chinese), an external tokenizer should be used before feeding the text into the library.
 
 ```python
-from text2phonemesequence import Text2PhonemeSequence
+from text2phonemefast import Text2PhonemeFast
 
-# Load Text2PhonemeSequence
-model = Text2PhonemeSequence(pretrained_g2p_model='charsiu/g2p_multilingual_byT5_small_100', language='eng-us', is_cuda=False)
+# Load Text2PhonemeFast
+model = Text2PhonemeFast(pretrained_g2p_model='charsiu/g2p_multilingual_byT5_small_100', language='eng-us', device="cpu")
+
+model = Text2PhonemeFast(
+    pretrained_g2p_model='charsiu/g2p_multilingual_byT5_small_100',
+    tokenizer="google/byt5-small",
+    g2p_dict_path="vie-n.unique.tsv",
+    device="cpu", # or cuda
+    language="vie-n",
+)
 
 # Convert a raw corpus
-model.infer_dataset(input_file="/absolute/path/to/input/file", output_file="/absolute/path/to/output/file", batch_size=64) # batch_size is the number of words fed into the CharsiuG2P toolkit per times. 
+model.infer_dataset(input_file="/absolute/path/to/input/file", output_file="/absolute/path/to/output/file") 
 
 # Convert a raw sentence
-model.infer_sentence("The overwhelming majority of people in this country know how to sift the wheat from the chaff in what they hear and what they read .")
-##Output: "ˈθ i ▁ ˈo ʊ v ɝ ˌw ɛ ɫ m ɪ ŋ ▁ m ə ˈd ʒ ɔ ɹ ə t i ▁ ˈɑ f ▁ ˈp i p ə ɫ ▁ ˈɪ n ▁ ˈθ ɪ s ▁ ˈk a ʊ n t ɹ i ▁ ˈn o ʊ ▁ ˈh o ʊ ▁ ˈt o ʊ ▁ ˈs ɪ f t ▁ ˈθ i ▁ ˈw i t ▁ ˈf ɹ ɑ m ▁ ˈθ i ▁ ˈt ʃ æ f ▁ ˈɪ n ▁ ˈw æ t ▁ ˈθ e ɪ ▁ ˈh ɪ ɹ ▁ ˈæ n d ▁ ˈw æ t ▁ ˈθ e ɪ ▁ ˈɹ ɛ d ▁ ."
+model.infer_sentence("'xin chào tôi là Mạnh Cường .")
+##Output: "s i n ˧˧ ▁ c a w ˧˨ ▁ t o j ˧˧ ▁ l a ˧˨ ▁ m ɛ ŋ ˨ˀ˩ ʔ ▁ k ɯ ə ŋ ˧˨ ▁ ."
+```
+
+## Credits
+
+This project is a fork of the original work developed by:
+- **Linh The Nguyen** - Original author of Text2PhonemeSequence
+- **VinAI Research** - Developers of [XPhoneBERT](https://github.com/VinAIResearch/XPhoneBERT)
+
+### Current Maintainer
+- **Nguyễn Mạnh Cường** ([manhcuong02](https://github.com/manhcuong02) or [manhcuong17072002](https://github.com/manhcuong17072002)) - Enhanced features and fixes for Vietnamese pronunciation
