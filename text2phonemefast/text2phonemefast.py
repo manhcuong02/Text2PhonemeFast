@@ -141,15 +141,36 @@ class Text2PhonemeFast:
         self.phone_dict = {}
 
         if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
-            if os.path.exists("./" + language + ".tsv"):
-                g2p_dict_path = "./" + language + ".tsv"
+            if g2p_dict_path is not None and (
+                "unique" in g2p_dict_path or "mix" in g2p_dict_path
+            ):
+                # Lấy thư mục đích
+                target_dir = os.path.dirname(g2p_dict_path)
+                target_file = os.path.basename(g2p_dict_path)
+
+                # Tạo thư mục đích nếu nó không tồn tại
+                if target_dir and not os.path.exists(target_dir):
+                    os.makedirs(target_dir, exist_ok=True)
+
+                # Tải file và lưu vào đúng vị trí
+                if target_dir:
+                    download_path = os.path.join(target_dir, target_file)
+                    os.system(
+                        "wget -O "
+                        + download_path
+                        + " https://raw.githubusercontent.com/manhcuong17072002/Text2Phonemes-Fast/master/"
+                        + target_file
+                    )
             else:
-                os.system(
-                    "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
-                    + language
-                    + ".tsv"
-                )
-                g2p_dict_path = "./" + language + ".tsv"
+                if os.path.exists("./" + language + ".tsv"):
+                    g2p_dict_path = "./" + language + ".tsv"
+                else:
+                    os.system(
+                        "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
+                        + language
+                        + ".tsv"
+                    )
+                    g2p_dict_path = "./" + language + ".tsv"
         else:
             if language is None or len(language) == 0:
                 language = g2p_dict_path.split("/")[-1].split(".")[0]
@@ -169,15 +190,15 @@ class Text2PhonemeFast:
     def save_missing_phonemes(self):
         """
         Save missing phonemes to the G2P dictionary and clear the missing list.
-    
-        This function reads the current G2P dictionary file and appends any new phoneme entries 
-        (i.e., phonemes not already present in the dictionary) to the end of the file. 
+
+        This function reads the current G2P dictionary file and appends any new phoneme entries
+        (i.e., phonemes not already present in the dictionary) to the end of the file.
         After updating the dictionary, it clears the internal list of missing phonemes.
-    
+
         Args:
-            None – This method operates on the instance's attributes, including the G2P dictionary path 
+            None – This method operates on the instance's attributes, including the G2P dictionary path
             and the list of missing phonemes.
-    
+
         Returns:
             None – The function performs in-place updates to the G2P dictionary file and internal phoneme state.
         """
@@ -303,13 +324,13 @@ class Text2PhonemeFast:
     ):
         """
         Infer phonemes for a given sentence.
-        
+
         Args:
             sentence (str): The input sentence to be converted to phonemes.
             seperate_syllabel_token (str): The token used to separate syllables in the output.
             save_missing_phonemes (bool): Whether to save missing phonemes to the G2P dictionary.
             language (str): The language code for the G2P model. If None, uses the default language.
-        
+
         Returns:
             str: The phoneme representation of the input sentence.
         """
@@ -339,7 +360,7 @@ class Text2PhonemeFast:
         return " ▁ ".join(list_phones)
 
     def postprocess_phonemes(self, text: str, phonemes: str) -> str:
-        
+
         # Phoneme post-processing for specific languages.
         # This is a workaround for some specific cases in Vietnamese phonemes.
         phoneme_replacements = {
@@ -371,10 +392,11 @@ class Text2PhonemeFast:
 if __name__ == "__main__":
 
     model = Text2PhonemeFast(
-        g2p_dict_path="vie-n.unique.tsv",
+        g2p_dict_path="text2phonemefast/vie-n.unique.tsv",
         device="cpu",
         language="vie-n",
     )
 
-    print(model.infer_sentence('xin chào tôi là Mạnh Cường .', save_missing_phonemes=True))
-
+    print(
+        model.infer_sentence("xin chào tôi là Mạnh Cường .", save_missing_phonemes=True)
+    )
