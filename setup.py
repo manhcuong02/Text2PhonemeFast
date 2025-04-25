@@ -28,10 +28,10 @@ setup(
     description="A Python Library to convert text to phoneme sequence fast - used for XPhoneBERT (Forked and enhanced from original work by Linh The Nguyen)",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/manhcuong17072002/Text2Phonemes-Fast',
+    url='https://github.com/manhcuong02/Text2PhonemeFast',
     author="Nguyễn Mạnh Cường",
     author_email="manhcuong17072002@gmail.com",
-    maintainer="manhcuong17072002",
+    maintainer="Nguyễn Mạnh Cường",
     maintainer_email="manhcuong17072002@gmail.com",
     # Original author: Linh The Nguyen (toank45sphn@gmail.com)
     classifiers=classifiers,
