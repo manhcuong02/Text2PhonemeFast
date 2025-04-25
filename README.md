@@ -76,3 +76,4 @@ This project is a fork of the original work developed by:
 
 ### Current Maintainer
 - **Nguyễn Mạnh Cường** ([manhcuong02](https://github.com/manhcuong02) or [manhcuong17072002](https://github.com/manhcuong17072002)) - Enhanced features and fixes for Vietnamese pronunciation
+
