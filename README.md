@@ -52,8 +52,6 @@ This library uses [CharsiuG2P](https://github.com/lingjzhu/CharsiuG2P/tree/main)
 from text2phonemefast import Text2PhonemeFast
 
 # Load Text2PhonemeFast
-model = Text2PhonemeFast(pretrained_g2p_model='charsiu/g2p_multilingual_byT5_small_100', language='eng-us', device="cpu")
-
 model = Text2PhonemeFast(
     pretrained_g2p_model='charsiu/g2p_multilingual_byT5_small_100',
     tokenizer="google/byt5-small",
