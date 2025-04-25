@@ -1,6 +1,6 @@
 # text2phonemefast: A Python Library for Fast Text to Phoneme Conversion
 
-> **Fork Notice**: This repository is maintained by [Nguyễn Mạnh Cường](https://github.com/manhcuong02) as a fork with enhancements from the original [Text2PhonemeSequence](https://github.com/thelinhbkhn2014/Text2PhonemeSequence) library created by Linh The Nguyen.
+> **Fork Notice**: This repository is maintained by [Nguyễn Mạnh Cường](https://github.com/manhcuong02) as a fork with enhancements from the original [Text2PhonemeSequence](https://github.com/thelinhbkhn2014/Text2PhonemeSequence) library created by Linh The Nguyen. Thanks to Linh The Nguyen and the co-developers of the project.
 
 This repository is an enhanced and faster version of the original [Text2PhonemeSequence](https://github.com/thelinhbkhn2014/Text2PhonemeSequence) library, which converts text to phoneme sequences for [XPhoneBERT](https://github.com/VinAIResearch/XPhoneBERT).
 
