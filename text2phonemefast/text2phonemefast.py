@@ -1,11 +1,14 @@
 import os
 import re
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
 
 from segments import Tokenizer
 from tqdm import tqdm
 from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
+
+# Import from the newly created file
+from .language_phoneme_limits import MAX_PHONEME_LENGTHS, DEFAULT_MAX_PHONEME_LENGTH
 
 
 class Text2PhonemeFast:
@@ -14,11 +17,27 @@ class Text2PhonemeFast:
         pretrained_g2p_model="charsiu/g2p_multilingual_byT5_small_100",
         tokenizer="google/byt5-small",
         language="vie-n",
-        g2p_dict_path=None,
-        device="cuda:0",
+        g2p_dict_path: Optional[str] = None,
+        device="cpu",
         # sử dụng cho ngôn ngữ phụ được chỉ định trong language tag
-        sec_language_dict={},
+        secondary_language_dict: Dict[str, str] = {},
     ):
+        """Initialize the Text2PhonemeFast model.
+
+        This class provides functionality to convert text to phonemes using a pretrained G2P (Grapheme-to-Phoneme) model.
+        It supports multiple languages and can handle mixed language text with language tags.
+
+        Args:
+            pretrained_g2p_model (str): HuggingFace model path for the G2P model.
+                Default: "charsiu/g2p_multilingual_byT5_small_100".
+            tokenizer (str): HuggingFace tokenizer path. Default: "google/byt5-small".
+            language (str): Primary language code for G2P conversion. Default: "vie-n".
+            g2p_dict_path (str, optional): Path to the G2P dictionary file. If None, will
+                download the dictionary for the specified language. Default: None.
+            device (str): Device to run the model on ("cuda:0", "cpu", etc.). Default: "cuda:0".
+            secondary_language_dict (dict): Dictionary mapping language codes to dictionary paths
+                for secondary languages support. Default: {}.
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
         self.model = T5ForConditionalGeneration.from_pretrained(pretrained_g2p_model)
         self.device = device
@@ -28,117 +47,6 @@ class Text2PhonemeFast:
             list('.?!,:;-()[]{}<>"') + list("'/‘”“/&#~@^|") + ["...", "*"]
         )
         self.segment_tool = Tokenizer()
-        self.phoneme_length = {
-            "msa.tsv": 27,
-            "amh.tsv": 28,
-            "urd.tsv": 152,
-            "mri.tsv": 30,
-            "glg.tsv": 22,
-            "swa.tsv": 28,
-            "est.tsv": 47,
-            "hbs-latn.tsv": 31,
-            "spa.tsv": 28,
-            "pol.tsv": 38,
-            "spa-latin.tsv": 24,
-            "fra.tsv": 43,
-            "uig.tsv": 33,
-            "aze.tsv": 34,
-            "nob.tsv": 52,
-            "swe.tsv": 36,
-            "por-bz.tsv": 28,
-            "arg.tsv": 30,
-            "yue.tsv": 227,
-            "sqi.tsv": 42,
-            "cat.tsv": 27,
-            "hbs-cyrl.tsv": 31,
-            "grc.tsv": 39,
-            "bak.tsv": 44,
-            "hun.tsv": 67,
-            "lat-clas.tsv": 61,
-            "ita.tsv": 37,
-            "san.tsv": 38,
-            "arm-w.tsv": 41,
-            "afr.tsv": 81,
-            "ind.tsv": 87,
-            "sme.tsv": 31,
-            "egy.tsv": 22,
-            "rus.tsv": 62,
-            "ady.tsv": 29,
-            "epo.tsv": 43,
-            "srp.tsv": 42,
-            "zho-t.tsv": 135,
-            "tha.tsv": 295,
-            "vie-c.tsv": 184,
-            "kur.tsv": 37,
-            "ice.tsv": 37,
-            "geo.tsv": 75,
-            "cze.tsv": 43,
-            "ara.tsv": 370,
-            "tgl.tsv": 27,
-            "nan.tsv": 175,
-            "por-po.tsv": 35,
-            "bos.tsv": 52,
-            "enm.tsv": 24,
-            "ltz.tsv": 55,
-            "ina.tsv": 26,
-            "ukr.tsv": 39,
-            "mac.tsv": 44,
-            "kaz.tsv": 44,
-            "slk.tsv": 73,
-            "ang.tsv": 33,
-            "khm.tsv": 47,
-            "syc.tsv": 24,
-            "eus.tsv": 35,
-            "spa-me.tsv": 28,
-            "tts.tsv": 26,
-            "gle.tsv": 36,
-            "slv.tsv": 35,
-            "ido.tsv": 23,
-            "zho-s.tsv": 135,
-            "vie-n.tsv": 174,
-            "gre.tsv": 20,
-            "eng-us.tsv": 119,
-            "fin.tsv": 44,
-            "pap.tsv": 26,
-            "tuk.tsv": 49,
-            "jpn.tsv": 174,
-            "bel.tsv": 58,
-            "uzb.tsv": 36,
-            "dan.tsv": 42,
-            "ori.tsv": 45,
-            "ron.tsv": 30,
-            "bul.tsv": 40,
-            "bur.tsv": 52,
-            "lit.tsv": 87,
-            "dut.tsv": 48,
-            "fra-qu.tsv": 255,
-            "eng-uk.tsv": 129,
-            "hin.tsv": 110,
-            "isl.tsv": 41,
-            "arm-e.tsv": 38,
-            "kor.tsv": 175,
-            "tur.tsv": 54,
-            "fas.tsv": 70,
-            "ger.tsv": 56,
-            "tam.tsv": 38,
-            "wel-sw.tsv": 44,
-            "vie-s.tsv": 172,
-            "mlt.tsv": 47,
-            "wel-nw.tsv": 49,
-            "slo.tsv": 27,
-            "lat-eccl.tsv": 43,
-            "snd.tsv": 60,
-            "tat.tsv": 103,
-            "alb.tsv": 40,
-            "hau.tsv": 45,
-            "pus.tsv": 34,
-            "tib.tsv": 61,
-            "sga.tsv": 47,
-            "heb.tsv": 39,
-            "hrx.tsv": 27,
-            "fao.tsv": 42,
-            "dsb.tsv": 29,
-        }
 
         if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
             if os.path.exists("./" + language + ".tsv"):
@@ -154,7 +62,8 @@ class Text2PhonemeFast:
             if language is None or len(language) == 0:
                 language = g2p_dict_path.split("/")[-1].split(".")[0]
 
-        if f"{language}.tsv" not in self.phoneme_length:
+        language_key = f"{language}.tsv"
+        if language_key not in MAX_PHONEME_LENGTHS:
             raise ValueError(
                 f"Language {language} not supported. Please check the phoneme length dictionary."
             )
@@ -162,11 +71,11 @@ class Text2PhonemeFast:
         self.language = language
 
         self.g2p_dict_path = g2p_dict_path
-        self.phone_dict = {}
-        self.phone_dict[self.language] = self.load_g2p(self.g2p_dict_path)
+        self.phoneme_dict = {}
+        self.phoneme_dict[self.language] = self.load_g2p(self.g2p_dict_path)
 
-        for sec_language, path in sec_language_dict.items():
-            self.phone_dict[sec_language] = self.load_g2p(path)
+        for sec_language, path in secondary_language_dict.items():
+            self.phoneme_dict[sec_language] = self.load_g2p(path)
 
         self.missing_phonemes: list[dict] = []
 
@@ -185,51 +94,62 @@ class Text2PhonemeFast:
         Returns:
             None – The function performs in-place updates to the G2P dictionary file and internal phoneme state.
         """
-        # Mở file từ điển G2P để đọc nội dung
+        # Open the G2P dictionary file to read content
         with open(self.g2p_dict_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
-        # Thêm phoneme thiếu vào từ điển G2P
+        # Add missing phonemes to the G2P dictionary
         for item in self.missing_phonemes:
             for text, phoneme in item.items():
                 lines.append(f"{text}\t{phoneme}\n")
                 print(f"Add new phoneme: {text} -> {phoneme}")
 
-        # Lưu các dòng mới vào file từ điển
+        # Save the new lines to the dictionary file
         with open(self.g2p_dict_path, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
-        # Làm sạch danh sách phoneme thiếu
+        # Clear the list of missing phonemes
         self.missing_phonemes = []
 
         # load g2p dict again
-        self.phone_dict[self.language] = self.load_g2p()
+        self.phoneme_dict[self.language] = self.load_g2p()
 
-    def load_g2p(self, filepath: Optional[str] = None):
-        """
-        Load G2P dictionary from file.
-        """
+    def load_g2p(self, filepath: Optional[str] = None) -> Dict[str, List[str]]:
+        """Load a G2P dictionary from file.
 
+        This method loads a grapheme-to-phoneme dictionary from a TSV file where each line
+        contains a word and its corresponding phoneme representation separated by a tab.
+
+        Args:
+            filepath (str, optional): Path to the G2P dictionary file. If None, uses the
+                instance's g2p_dict_path. Default: None.
+
+        Returns:
+            dict: A dictionary mapping words (graphemes) to lists of phoneme representations.
+
+        Raises:
+            FileNotFoundError: If the specified file does not exist.
+            AssertionError: If a line in the file does not have exactly two elements.
+        """
         if filepath is None:
             filepath = self.g2p_dict_path
 
-        phone_dict = {}
+        phoneme_dict = {}
 
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf-8") as f:
                 list_words = f.read().strip().split("\n")
 
             for word_phone in list_words:
-
                 w_p = word_phone.split("\t")
                 assert len(w_p) == 2, print(w_p)
 
                 if "," not in w_p[1]:
-                    phone_dict[w_p[0]] = [w_p[1]]
+                    phoneme_dict[w_p[0]] = [w_p[1]]
                 else:
-                    phone_dict[w_p[0]] = [w_p[1].split(",")[0]]
+                    phoneme_dict[w_p[0]] = [w_p[1].split(",")[0]]
 
-            return phone_dict
+            return phoneme_dict
         else:
             raise FileNotFoundError(
                 f"G2P dictionary file {filepath} not found. Please check the file path."
@@ -238,11 +158,28 @@ class Text2PhonemeFast:
     def infer_dataset(
         self,
         input_file="",
-        seperate_syllabel_token="_",
+        separate_syllable_token="_",
         output_file="",
         batch_size=1,
         save_missing_phonemes=False,
     ):
+        """Process a dataset file, converting text to phonemes.
+
+        This method reads an input file where each line contains text data with prefix information,
+        converts the text to phonemes, and writes the result to an output file.
+
+        Args:
+            input_file (str): Path to the input file containing text data.
+            separate_syllable_token (str): Token used to separate syllables in the input text.
+                Default: "_".
+            output_file (str): Path to save the converted phoneme results.
+            batch_size (int): Processing batch size (currently not used). Default: 1.
+            save_missing_phonemes (bool): Whether to save any missing phonemes encountered
+                during processing to the G2P dictionary. Default: False.
+
+        Returns:
+            None: Results are written to the output_file.
+        """
         print("Building vocabulary!")
 
         # Write results to output file
@@ -255,7 +192,7 @@ class Text2PhonemeFast:
                 prefix = line[0]
                 text = line[-1]
 
-                phonemes = self.infer_sentence(text, seperate_syllabel_token)
+                phonemes = self.infer_sentence(text, separate_syllable_token)
 
                 if len(line) == 3:  # for multi speakers
                     f.write(prefix + "|" + line[1] + "|" + phonemes)
@@ -266,34 +203,60 @@ class Text2PhonemeFast:
         if save_missing_phonemes:
             self.save_missing_phonemes()
 
-    def check_text_in_g2p_dict(self, text: str) -> Optional[str]:
+    def get_phoneme_from_dict(self, text: str) -> Optional[str]:
+        """Look up phoneme for a given text in the G2P dictionary.
+
+        This method searches for the exact text or its lowercase version in the phoneme dictionary
+        for the current language. If the text is a punctuation mark, it returns the text itself.
+
+        Args:
+            text (str): The text to look up in the phoneme dictionary.
+
+        Returns:
+            Optional[str]: The phoneme representation if found, or None if not found.
         """
-        Check if the text is in the G2P dictionary.
-        """
-        if text in self.phone_dict[self.language]:
-            return self.phone_dict[self.language][text][0]
-        elif text.lower() in self.phone_dict[self.language]:
-            return self.phone_dict[self.language][text.lower()][0]
+        if text in self.phoneme_dict[self.language]:
+            return self.phoneme_dict[self.language][text][0]
+        elif text.lower() in self.phoneme_dict[self.language]:
+            return self.phoneme_dict[self.language][text.lower()][0]
         elif text in self.punctuation:
             return text
         return None
 
-    def t2p(
-        self, text: str, language: Optional[str] = None, return_type: str = "string"
+    def text_to_phoneme(
+        self,
+        text: str,
+        language: Optional[str] = None,
+        return_type: str = "string",
     ) -> Union[str, List[str]]:
+        """Convert text to phoneme representation.
 
+        This method converts the input text to phonemes using either the loaded dictionary
+        or the G2P model for words not in the dictionary.
+
+        Args:
+            text (str): The text to convert to phonemes.
+            language (str, optional): Language code for the text. If None, uses the instance's
+                default language. Default: None.
+            return_type (str): Format of the returned phonemes, either "string" or "list".
+                Default: "string".
+
+        Returns:
+            Union[str, List[str]]: Phoneme representation as a single string or a list of strings
+                depending on the return_type parameter.
+        """
         if language is None:
             language = self.language
-        if language not in self.phone_dict:
-            self.phone_dict[language] = {}
+        if language not in self.phoneme_dict:
+            self.phoneme_dict[language] = {}
 
-        phoneme = self.check_text_in_g2p_dict(text)
+        phoneme = self.get_phoneme_from_dict(text)
         if phoneme is not None:
             phones = [phoneme]
         else:
             phones = []
             for word in text.split(" "):
-                phoneme = self.check_text_in_g2p_dict(word)
+                phoneme = self.get_phoneme_from_dict(word)
                 if phoneme is not None:
                     phones.append(phoneme)
                 else:
@@ -306,12 +269,16 @@ class Text2PhonemeFast:
                     if "cuda" in self.device:
                         out["input_ids"] = out["input_ids"].to(self.device)
                         out["attention_mask"] = out["attention_mask"].to(self.device)
-                    if language + ".tsv" not in self.phoneme_length.keys():
-                        self.phoneme_length[language + ".tsv"] = 50
+
+                    language_key = language + ".tsv"
+                    max_length = MAX_PHONEME_LENGTHS.get(
+                        language_key, DEFAULT_MAX_PHONEME_LENGTH
+                    )
+
                     preds = self.model.generate(
                         **out,
                         num_beams=1,
-                        max_length=self.phoneme_length[language + ".tsv"],
+                        max_length=max_length,
                     )
                     phs = self.tokenizer.batch_decode(
                         preds.tolist(), skip_special_tokens=True
@@ -330,24 +297,36 @@ class Text2PhonemeFast:
             return "".join(phones)
 
     def smart_split_with_language_tag(self, text: str) -> list[str]:
-        # Regex bắt các khối <lang=...>...</lang>
+        """Split text while preserving language tags.
+
+        This method splits the input text into words but keeps language tag blocks
+        intact as single elements in the result list.
+
+        Args:
+            text (str): The input text to split, which may contain language tags in
+                the format <lang=lang_code>text</lang>.
+
+        Returns:
+            list[str]: A list of words and language tag blocks.
+        """
+        # Regex to capture <lang=...>...</lang> blocks
         lang_pattern = re.compile(r"<lang\s*=.*?>.*?</lang>")
 
         parts = []
         last_end = 0
 
-        # Duyệt qua từng match
+        # Process each match
         for match in lang_pattern.finditer(text):
-            # Lấy đoạn trước language tag, nếu có
+            # Get text before language tag, if any
             before = text[last_end : match.start()]
             if before.strip():
                 parts.extend(before.strip().split())
 
-            # Lấy nguyên khối language tag
+            # Get the entire language tag block
             parts.append(match.group())
             last_end = match.end()
 
-        # Xử lý đoạn sau cùng nếu có
+        # Process text after the last match, if any
         after = text[last_end:]
         if after.strip():
             parts.extend(after.strip().split())
@@ -357,21 +336,38 @@ class Text2PhonemeFast:
     def infer_sentence(
         self,
         sentence="",
-        seperate_syllabel_token="_",
+        separate_syllable_token="_",
         save_missing_phonemes=False,
-        # Thêm language để tùy chọn cách đọc từ viết tắt
         language: Optional[str] = None,
-    ):
+    ) -> str:
+        """Convert a sentence to phoneme representation.
+
+        This method processes a given sentence, handling language tags and converting
+        text to phoneme representation. It supports mixed language text by processing
+        language tag blocks separately.
+
+        Args:
+            sentence (str): The input sentence to convert.
+            separate_syllable_token (str): Token used to separate syllables in the input text.
+                Default: "_".
+            save_missing_phonemes (bool): Whether to save encountered missing phonemes
+                to the G2P dictionary. Default: False.
+            language (str, optional): Default language for text without explicit language tags.
+                If None, uses the instance's default language. Default: None.
+
+        Returns:
+            str: The phoneme representation of the input sentence, with phonemes separated
+                by the " ▁ " token.
+        """
         list_words = self.smart_split_with_language_tag(sentence)
 
         list_phones = []
 
         for i in range(len(list_words)):
-
-            list_words[i] = list_words[i].replace(seperate_syllabel_token, " ")
+            list_words[i] = list_words[i].replace(separate_syllable_token, " ")
 
             # normalize apostrophes for english words
-            list_words[i] = list_words[i].replace("’", "'")
+            list_words[i] = list_words[i].replace("'", "'")
 
             if len(list_words[i]) == 0:
                 continue
@@ -390,7 +386,7 @@ class Text2PhonemeFast:
                 specific_language = language
                 return_type = "string"
 
-            phoneme = self.t2p(
+            phoneme = self.text_to_phoneme(
                 list_words[i], language=specific_language, return_type=return_type
             )
 
@@ -411,6 +407,18 @@ class Text2PhonemeFast:
         return " ▁ ".join(list_phones)
 
     def postprocess_phonemes(self, text: str, phonemes: str) -> str:
+        """Apply post-processing rules to generated phonemes.
+
+        This method applies language-specific phoneme transformation rules to improve
+        the accuracy of the generated phonemes based on the input text patterns.
+
+        Args:
+            text (str): The original input text.
+            phonemes (str): The raw phoneme representation generated by the model.
+
+        Returns:
+            str: The post-processed phoneme representation.
+        """
         phoneme_replacements = {
             r"^(?=.*uy)(?!.*ui).*$": {
                 "uj": "wi",
@@ -424,8 +432,8 @@ class Text2PhonemeFast:
             },
         }
 
-        # chỉ dùng cho file vie-n.tsv hoặc vie-n.unique.tsv
-        # không cho phép với file vie-n.mix-eng-us.tsv
+        # Only used for vie-n.tsv or vie-n.unique.tsv files
+        # Not allowed with vie-n.mix-eng-us.tsv
         if "vie" in self.language and "mix" not in self.g2p_dict_path:
             for pattern, replacements in phoneme_replacements.items():
                 for t in text.split():
@@ -437,27 +445,31 @@ class Text2PhonemeFast:
         return phonemes
 
 
-if __name__ == "__main__":
-
+def demo():
+    """Run a demonstration of the Text2PhonemeFast model."""
     model = Text2PhonemeFast(
         g2p_dict_path="vie-n.mix-eng-us.tsv",
         device="cpu",
         language="vie-n",
-        sec_language_dict={
+        secondary_language_dict={
             "eng-us": "eng-us.unique.tsv",
         },
     )
 
     print(
         model.infer_sentence(
-            "Công nghệ AI, <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
+            "Công nghệ AI , <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
             save_missing_phonemes=False,
         )
     )
-    
+
     print(
         model.infer_sentence(
             "Ba tôi đang là một BA .",
             save_missing_phonemes=False,
         )
     )
+
+
+if __name__ == "__main__":
+    demo()
