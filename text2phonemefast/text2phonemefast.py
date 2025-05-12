@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Optional
+from typing import Optional, Union, List
 
 from segments import Tokenizer
 from tqdm import tqdm
@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
 
 
-class Text2PhonemeFast:
+class Text2PhonemeSequence:
     def __init__(
         self,
         pretrained_g2p_model="charsiu/g2p_multilingual_byT5_small_100",
@@ -16,6 +16,8 @@ class Text2PhonemeFast:
         language="vie-n",
         g2p_dict_path=None,
         device="cuda:0",
+        # sử dụng cho ngôn ngữ phụ được chỉ định trong language tag
+        sec_language_dict={},
     ):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
         self.model = T5ForConditionalGeneration.from_pretrained(pretrained_g2p_model)
@@ -138,39 +140,16 @@ class Text2PhonemeFast:
             "dsb.tsv": 29,
         }
 
-        self.phone_dict = {}
-
         if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
-            if g2p_dict_path is not None and (
-                "unique" in g2p_dict_path or "mix" in g2p_dict_path
-            ):
-                # Lấy thư mục đích
-                target_dir = os.path.dirname(g2p_dict_path)
-                target_file = os.path.basename(g2p_dict_path)
-
-                # Tạo thư mục đích nếu nó không tồn tại
-                if target_dir and not os.path.exists(target_dir):
-                    os.makedirs(target_dir, exist_ok=True)
-
-                # Tải file và lưu vào đúng vị trí
-                if target_dir:
-                    download_path = os.path.join(target_dir, target_file)
-                    os.system(
-                        "wget -O "
-                        + download_path
-                        + " https://raw.githubusercontent.com/manhcuong17072002/Text2Phonemes-Fast/master/"
-                        + target_file
-                    )
+            if os.path.exists("./" + language + ".tsv"):
+                g2p_dict_path = "./" + language + ".tsv"
             else:
-                if os.path.exists("./" + language + ".tsv"):
-                    g2p_dict_path = "./" + language + ".tsv"
-                else:
-                    os.system(
-                        "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
-                        + language
-                        + ".tsv"
-                    )
-                    g2p_dict_path = "./" + language + ".tsv"
+                os.system(
+                    "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
+                    + language
+                    + ".tsv"
+                )
+                g2p_dict_path = "./" + language + ".tsv"
         else:
             if language is None or len(language) == 0:
                 language = g2p_dict_path.split("/")[-1].split(".")[0]
@@ -183,7 +162,11 @@ class Text2PhonemeFast:
         self.language = language
 
         self.g2p_dict_path = g2p_dict_path
-        self.load_g2p()
+        self.phone_dict = {}
+        self.phone_dict[self.language] = self.load_g2p(self.g2p_dict_path)
+
+        for sec_language, path in sec_language_dict.items():
+            self.phone_dict[sec_language] = self.load_g2p(path)
 
         self.missing_phonemes: list[dict] = []
 
@@ -220,15 +203,20 @@ class Text2PhonemeFast:
         self.missing_phonemes = []
 
         # load g2p dict again
-        self.phone_dict = {}
-        self.load_g2p()
+        self.phone_dict[self.language] = self.load_g2p()
 
-    def load_g2p(self):
+    def load_g2p(self, filepath: Optional[str] = None):
         """
         Load G2P dictionary from file.
         """
-        if os.path.exists(self.g2p_dict_path):
-            with open(self.g2p_dict_path, "r", encoding="utf-8") as f:
+
+        if filepath is None:
+            filepath = self.g2p_dict_path
+
+        phone_dict = {}
+
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as f:
                 list_words = f.read().strip().split("\n")
 
             for word_phone in list_words:
@@ -237,15 +225,22 @@ class Text2PhonemeFast:
                 assert len(w_p) == 2, print(w_p)
 
                 if "," not in w_p[1]:
-                    self.phone_dict[w_p[0]] = [w_p[1]]
+                    phone_dict[w_p[0]] = [w_p[1]]
                 else:
-                    self.phone_dict[w_p[0]] = [w_p[1].split(",")[0]]
+                    phone_dict[w_p[0]] = [w_p[1].split(",")[0]]
+
+            return phone_dict
+        else:
+            raise FileNotFoundError(
+                f"G2P dictionary file {filepath} not found. Please check the file path."
+            )
 
     def infer_dataset(
         self,
         input_file="",
         seperate_syllabel_token="_",
         output_file="",
+        batch_size=1,
         save_missing_phonemes=False,
     ):
         print("Building vocabulary!")
@@ -271,70 +266,94 @@ class Text2PhonemeFast:
         if save_missing_phonemes:
             self.save_missing_phonemes()
 
-    def t2p(self, text: str, language: Optional[str] = None) -> str:
+    def t2p(
+        self, text: str, language: Optional[str] = None, return_type: str = "string"
+    ) -> Union[str, List[str]]:
 
-        # Nếu muốn chỉ định nghĩa cách đọc từ viết tắt hoặc từ không có trong từ điển
         if language is None:
             language = self.language
+        if language not in self.phone_dict:
+            self.phone_dict[language] = {}
 
-        if text in self.phone_dict:
-            return self.phone_dict[text][0]
+        if text in self.phone_dict[language]:
+            phones = [self.phone_dict[language][text][0]]
         elif text in self.punctuation:
-            return text
+            phones = [text]
         else:
-            if all([t in self.phone_dict for t in text.split(" ")]):
-                phones = ""
-                for t in text.split(" "):
-                    if t in self.phone_dict:
-                        phones += self.phone_dict[t][0]
-                return phones
-            else:
-                out = self.tokenizer(
-                    "<" + language + ">: " + text,
-                    padding=True,
-                    add_special_tokens=False,
-                    return_tensors="pt",
-                )
-                if "cuda" in self.device:
-                    out["input_ids"] = out["input_ids"].to(self.device)
-                    out["attention_mask"] = out["attention_mask"].to(self.device)
-                if language + ".tsv" not in self.phoneme_length.keys():
-                    self.phoneme_length[language + ".tsv"] = 50
-                preds = self.model.generate(
-                    **out,
-                    num_beams=1,
-                    max_length=self.phoneme_length[language + ".tsv"],
-                )
-                phones = self.tokenizer.batch_decode(
-                    preds.tolist(), skip_special_tokens=True
-                )
+            phones = []
+            for word in text.split(" "):
+                if word in self.phone_dict[language]:
+                    phones.append(self.phone_dict[language][word][0])
+                elif word in self.punctuation:
+                    phones.append(word)
+                else:
+                    out = self.tokenizer(
+                        "<" + language + ">: " + word,
+                        padding=True,
+                        add_special_tokens=False,
+                        return_tensors="pt",
+                    )
+                    if "cuda" in self.device:
+                        out["input_ids"] = out["input_ids"].to(self.device)
+                        out["attention_mask"] = out["attention_mask"].to(self.device)
+                    if language + ".tsv" not in self.phoneme_length.keys():
+                        self.phoneme_length[language + ".tsv"] = 50
+                    preds = self.model.generate(
+                        **out,
+                        num_beams=1,
+                        max_length=self.phoneme_length[language + ".tsv"],
+                    )
+                    phs = self.tokenizer.batch_decode(
+                        preds.tolist(), skip_special_tokens=True
+                    )
 
-                phoneme = self.postprocess_phonemes(text, phones[0])
+                    phoneme = self.postprocess_phonemes(word, phs[0])
 
-                self.missing_phonemes.append({text: phoneme})
+                    self.missing_phonemes.append({word: phoneme})
+                    print(f"Missing phoneme: {word} -> {phoneme}")
 
-                return phoneme
+                    phones.append(phoneme)
+
+        if return_type == "list":
+            return phones
+        else:
+            return "".join(phones)
+
+    def smart_split_with_language_tag(self, text: str) -> list[str]:
+        # Regex bắt các khối <lang=...>...</lang>
+        lang_pattern = re.compile(r"<lang\s*=.*?>.*?</lang>")
+
+        parts = []
+        last_end = 0
+
+        # Duyệt qua từng match
+        for match in lang_pattern.finditer(text):
+            # Lấy đoạn trước language tag, nếu có
+            before = text[last_end : match.start()]
+            if before.strip():
+                parts.extend(before.strip().split())
+
+            # Lấy nguyên khối language tag
+            parts.append(match.group())
+            last_end = match.end()
+
+        # Xử lý đoạn sau cùng nếu có
+        after = text[last_end:]
+        if after.strip():
+            parts.extend(after.strip().split())
+
+        return parts
 
     def infer_sentence(
         self,
         sentence="",
         seperate_syllabel_token="_",
         save_missing_phonemes=False,
+        # Thêm language để tùy chọn cách đọc từ viết tắt
         language: Optional[str] = None,
     ):
-        """
-        Infer phonemes for a given sentence.
-
-        Args:
-            sentence (str): The input sentence to be converted to phonemes.
-            seperate_syllabel_token (str): The token used to separate syllables in the output.
-            save_missing_phonemes (bool): Whether to save missing phonemes to the G2P dictionary.
-            language (str): The language code for the G2P model. If None, uses the default language.
-
-        Returns:
-            str: The phoneme representation of the input sentence.
-        """
-        list_words = sentence.lower().split(" ")
+        list_words = self.smart_split_with_language_tag(sentence.lower())
+        print(list_words)
         list_phones = []
 
         for i in range(len(list_words)):
@@ -344,8 +363,30 @@ class Text2PhonemeFast:
             # normalize apostrophes for english words
             list_words[i] = list_words[i].replace("’", "'")
 
-            phoneme = self.t2p(list_words[i], language)
-            list_phones.append(phoneme)
+            if len(list_words[i]) == 0:
+                continue
+
+            # extract language from language tag: <lang=eng-us>AI</lang>
+            if re.search(r"<lang\s*=(.*?)>", list_words[i]):
+                specific_language = re.search(
+                    r"<lang\s*=\s*['\"]?(.*?)['\"]?>", list_words[i]
+                ).group(1)
+                return_type = "list"
+                list_words[i] = re.sub(
+                    r"<lang\s*=\s*['\"]?(.*?)['\"]?>", "", list_words[i]
+                )
+                list_words[i] = re.sub(r"</lang>", "", list_words[i])
+            else:
+                specific_language = language
+                return_type = "string"
+
+            phoneme = self.t2p(
+                list_words[i], language=specific_language, return_type=return_type
+            )
+
+            if isinstance(phoneme, str):
+                phoneme = [phoneme]
+            list_phones.extend(phoneme)
 
         for i in range(len(list_phones)):
             try:
@@ -360,9 +401,6 @@ class Text2PhonemeFast:
         return " ▁ ".join(list_phones)
 
     def postprocess_phonemes(self, text: str, phonemes: str) -> str:
-
-        # Phoneme post-processing for specific languages.
-        # This is a workaround for some specific cases in Vietnamese phonemes.
         phoneme_replacements = {
             r"^(?=.*uy)(?!.*ui).*$": {
                 "uj": "wi",
@@ -391,12 +429,18 @@ class Text2PhonemeFast:
 
 if __name__ == "__main__":
 
-    model = Text2PhonemeFast(
-        g2p_dict_path="text2phonemefast/vie-n.unique.tsv",
+    model = Text2PhonemeSequence(
+        g2p_dict_path="vie-n.mix-eng-us.tsv",
         device="cpu",
         language="vie-n",
+        sec_language_dict={
+            "eng-us": "eng-us.unique.tsv",
+        },
     )
 
     print(
-        model.infer_sentence("xin chào tôi là Mạnh Cường .", save_missing_phonemes=True)
+        model.infer_sentence(
+            "Công nghệ <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
+            save_missing_phonemes=False,
+        )
     )
