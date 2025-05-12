@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
 
 
-class Text2PhonemeSequence:
+class Text2PhonemeFast:
     def __init__(
         self,
         pretrained_g2p_model="charsiu/g2p_multilingual_byT5_small_100",
@@ -266,6 +266,18 @@ class Text2PhonemeSequence:
         if save_missing_phonemes:
             self.save_missing_phonemes()
 
+    def check_text_in_g2p_dict(self, text: str) -> Optional[str]:
+        """
+        Check if the text is in the G2P dictionary.
+        """
+        if text in self.phone_dict[self.language]:
+            return self.phone_dict[self.language][text][0]
+        elif text.lower() in self.phone_dict[self.language]:
+            return self.phone_dict[self.language][text.lower()][0]
+        elif text in self.punctuation:
+            return text
+        return None
+
     def t2p(
         self, text: str, language: Optional[str] = None, return_type: str = "string"
     ) -> Union[str, List[str]]:
@@ -275,17 +287,15 @@ class Text2PhonemeSequence:
         if language not in self.phone_dict:
             self.phone_dict[language] = {}
 
-        if text in self.phone_dict[language]:
-            phones = [self.phone_dict[language][text][0]]
-        elif text in self.punctuation:
-            phones = [text]
+        phoneme = self.check_text_in_g2p_dict(text)
+        if phoneme is not None:
+            phones = [phoneme]
         else:
             phones = []
             for word in text.split(" "):
-                if word in self.phone_dict[language]:
-                    phones.append(self.phone_dict[language][word][0])
-                elif word in self.punctuation:
-                    phones.append(word)
+                phoneme = self.check_text_in_g2p_dict(word)
+                if phoneme is not None:
+                    phones.append(phoneme)
                 else:
                     out = self.tokenizer(
                         "<" + language + ">: " + word,
@@ -352,8 +362,8 @@ class Text2PhonemeSequence:
         # Thêm language để tùy chọn cách đọc từ viết tắt
         language: Optional[str] = None,
     ):
-        list_words = self.smart_split_with_language_tag(sentence.lower())
-        print(list_words)
+        list_words = self.smart_split_with_language_tag(sentence)
+
         list_phones = []
 
         for i in range(len(list_words)):
@@ -429,7 +439,7 @@ class Text2PhonemeSequence:
 
 if __name__ == "__main__":
 
-    model = Text2PhonemeSequence(
+    model = Text2PhonemeFast(
         g2p_dict_path="vie-n.mix-eng-us.tsv",
         device="cpu",
         language="vie-n",
@@ -440,7 +450,14 @@ if __name__ == "__main__":
 
     print(
         model.infer_sentence(
-            "Công nghệ <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
+            "Công nghệ AI, <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
+            save_missing_phonemes=False,
+        )
+    )
+    
+    print(
+        model.infer_sentence(
+            "Ba tôi đang là một BA .",
             save_missing_phonemes=False,
         )
     )
