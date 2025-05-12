@@ -787,7 +787,6 @@ com	kɔm˧˧
 con	kɔn˧˧
 cong	kɔŋ͡m˧˧
 coong	kɔɔŋ͡m˧˧
-cot	kɔt˧˧
 coóc	kɔɔk͡p˦˥
 coọc	kɔɔk͡p˨ˀ˩
 cu	ku˧˧
@@ -809,7 +808,6 @@ cuội	kuəj˨ˀ˩ʔ
 cuộn	kuən˨ˀ˩ʔ
 cuộng	kuəŋ˨ˀ˩ʔ
 cuờng	kuəŋ˧˨
-cy	ki˧˧
 cà	ka˧˨
 cài	kaj˧˨
 càm	kam˧˨
@@ -1365,7 +1363,6 @@ dựt	zɯt˨ˀ˩
 e	ɛ˧˧
 em	ɛm˧˧
 en	ɛn˧˧
-eng	ɛŋ˧˧
 eo	eo˧˧
 ga	ɣa˧˧
 gai	ɣaj˧˧
@@ -2455,7 +2452,6 @@ kia	kiə˧˧
 kim	kim˧˧
 kin	kin˧˧
 kinh	kiŋ˧˧
-kip	kip˧˧
 kiu	kiw˧˧
 kiêm	kiəm˧˧
 kiên	kiən˧˧
@@ -2580,7 +2576,6 @@ lic	lik˧˧
 lim	lim˧˧
 lin	lin˧˧
 linh	liŋ˧˧
-lit	lit˧˧
 liu	liw˧˧
 liêm	liəm˧˧
 liên	liən˧˧
@@ -3378,14 +3373,12 @@ nan	nan˧˧
 nang	naŋ˧˧
 nanh	nɛŋ˧˧
 nao	naw˧˧
-nat	nat˧˧
 nau	năw˧˧
 nay	năj˧˧
 ne	nɛ˧˧
 nem	nɛm˧˧
 nen	nɛn˧˧
 neo	neo˧˧
-neon	neon˧˧
 nga	ŋa˧˧
 ngai	ŋaj˧˧
 ngam	ŋam˧˧
@@ -4083,10 +4076,8 @@ nhựa	ɲɯə˨ˀ˩ʔ
 nhựt	ɲɯt˨ˀ˩
 ni	ni˧˧
 nia	niə˧˧
-nic	nik˧˧
 nin	nin˧˧
 ninh	niŋ˧˧
-nit	nit˧˧
 niu	niw˧˧
 niêm	niəm˧˧
 niên	niən˧˧
@@ -4628,7 +4619,6 @@ po	pɔ˧˧
 poa	pwa˧˧
 pom	pɔm˧˧
 pong	pɔŋ͡m˧˧
-pop	pɔp˧˧
 poọng	pɔɔŋ͡m˨ˀ˩ʔ
 pu	pu˧˧
 pua	puə˧˧
@@ -4836,7 +4826,6 @@ ran	ran˧˧
 rang	raŋ˧˧
 ranh	rɛŋ˧˧
 rao	raw˧˧
-rat	rat˧˧
 rau	răw˧˧
 ray	răj˧˧
 re	rɛ˧˧
@@ -4848,7 +4837,6 @@ ri	ri˧˧
 ria	riə˧˧
 rim	rim˧˧
 rin	rin˧˧
-ring	riŋ˧˧
 rinh	riŋ˧˧
 rit	rit˧˧
 riu	riw˧˧
@@ -5179,7 +5167,6 @@ sen	sɛn˧˧
 seo	seo˧˧
 si	si˧˧
 sia	siə˧˧
-sic	sik˧˧
 sim	sim˧˧
 sin	sin˧˧
 sinh	siŋ˧˧
@@ -5818,10 +5805,8 @@ thự	tʰɯ˨ˀ˩ʔ
 thực	tʰɯk˨ˀ˩
 ti	ti˧˧
 tia	tiə˧˧
-tic	tik˧˧
 tim	tim˧˧
 tin	tin˧˧
-ting	tiŋ˧˧
 tinh	tiŋ˧˧
 tit	tit˧˧
 tiu	tiw˧˧
@@ -5859,7 +5844,6 @@ tom	tɔm˧˧
 ton	tɔn˧˧
 tong	tɔŋ͡m˧˧
 toong	tɔɔŋ͡m˧˧
-top	tɔp˧˧
 toà	twa˧˨
 toài	twaj˧˨
 toàn	twan˧˨
@@ -8151,6 +8135,7 @@ singapo	siŋ˧˧ɣa˧˧pɔ˧˧
 'til	ˈtɪɫ
 'tis	ˈtɪz
 'twas	ˈtwəz
+A	ˈeɪ
 a's	ˈeɪz
 a.	ˈeɪ
 a.'s	ˈeɪz
@@ -9985,6 +9970,7 @@ ahsahka	ɑˈsɑkə
 ahuja	ɑˈhujə
 ahumada	ɑjuˈmɑdə
 ahwahnee	əˈwɑni
+AI	ˈeɪˈaɪ
 aichele	ˈaɪkəɫ
 aicher	ˈaɪkɝ
 aichi	ɑˈitʃi
@@ -13852,7 +13838,6 @@ asmodeus	ˌæzməˈdeɪəs
 asmus	əzˈmus
 asmussen	əzˈməsən
 asner	ˈæsnɝ
-asp	ˈæsp
 asparagus	əˈspɛɹəɡəs
 aspartame	ˈæspɝˌteɪm
 aspect	ˈæsˌpɛkt
@@ -14084,6 +14069,7 @@ astronomically	ˌæstɹəˈnɑmɪkɫi
 astronomy	əˈstɹɑnəmi
 astrophotography	ˌæstɹoʊfəˈtɑɡɹəfi
 astrophysicist	ˌæstɹoʊˈfɪsɪsɪst
+astrophysicists	ˌæstɹoʊˈfɪsɪsɪsts
 astrophysics	ˌæstɹoʊˈfɪzɪks
 astros	ˈæstɹoʊs
 astrotech	ˈæstɹoʊˌtɛk
@@ -32299,6 +32285,7 @@ costumers	ˈkɑstumɝz
 costumes	kɑˈstumz,ˈkɑstumz
 cosurtuh	kəˈsɝtə
 cosy	ˈkoʊzi
+cot	ˈkɑt
 cota	ˈkoʊtə
 cote	ˈkoʊt
 cotelle	ˌkoʊˈtɛɫ
@@ -34177,6 +34164,7 @@ cwikla	ˈkwɪkɫə
 cwiklinski	kwɪˈkɫɪnski
 cwynar	ˈkwɪnɝ
 cxc	ˈsiˈɛkˈsi,ˈsiˈɛksˈsi
+cy	ˈsaɪ
 cyacq	ˈsaɪæk
 cyan	saɪˈæn
 cyanamid	saɪˈænəmɪd
@@ -43447,6 +43435,7 @@ enforcing	ɛnˈfɔɹsɪŋ
 enfranchise	ɪnˈfɹænˌtʃaɪz
 enfranchised	ɛnˈfɹænˌtʃaɪzd
 enfranchises	ɛnˈfɹænˌtʃaɪzɪz
+eng	ˈɛŋ
 engage	ɛnˈɡeɪdʒ
 engaged	ɛnˈɡeɪdʒd
 engagement	ɛnˈɡeɪdʒmənt
@@ -45723,6 +45712,7 @@ fackler	ˈfækɫɝ
 fackrell	ˈfækɹəɫ
 facsimile	fækˈsɪməɫi
 facsimiles	fækˈsɪməɫiz
+similes	sɪməɫiz
 fact	ˈfækt
 facteau	fəkˈtoʊ
 faction	ˈfækʃən
@@ -61979,6 +61969,7 @@ hyundai's	ˈhənˌdeɪz
 hyundais	ˈhjənˌdeɪz
 hywell	ˈhaɪwɛɫ
 hz	ˈhɝtz
+I	ˈaɪ
 i'd	ˈaɪd
 i'ers	ˈaɪɝz
 i'll	ˈaɪɫ
@@ -68461,6 +68452,7 @@ kinzlmaier	ˈkɪnzəɫˌmaɪɝ
 kiosk	ˈkiˌɔsk
 kiosks	ˈkiˌɔsks
 kious	ˈkaɪəs
+kip	ˈkɪp
 kiper	ˈkaɪpɝ
 kipfer	ˈkɪpfɝ
 kipling	ˈkɪpɫɪŋ
@@ -74100,6 +74092,7 @@ lists	ˈɫɪsts
 liszewski	ɫɪˈʃɛfski
 liszka	ˈɫɪʃkə
 liszt	ˈɫɪst
+lit	ˈɫɪt
 lita	ˈɫitə
 litaker	ˈɫɪteɪkɝ
 litalien	ˈɫɪtəɫin
@@ -78798,7 +78791,7 @@ mba	ˈɛmˈbiˈeɪ
 mbank	ˈɛmˈbæŋk
 mbeki	ˈmbɛki,ɛmˈbɛki,əmˈbɛki
 mbira	məˈbɪɹə
-mc	mɪk,ˈɛmˈsi
+mc	ˈɛmˈsi
 mcabee	məˈkæbi,ˈmækəbi
 mcadam	məˈkædəm
 mcadams	məˈkædəmz
@@ -85265,6 +85258,7 @@ nastiest	ˈnæstiəst
 nastiness	ˈnæstinəs
 nasty	ˈnæsti
 nasworthy	ˈnæswɝði
+nat	ˈnæt
 nata	ˈnɑtə
 natal	nəˈtɑɫ,ˈneɪtəɫ
 natala	nɑˈtɑɫə
@@ -85785,6 +85779,7 @@ neoliberals	ˌnioʊˈɫɪbɝəɫz
 neolith	ˈnioʊˌɫɪθ
 neolithic	ˈnioʊˌɫɪθɪk
 neoma	neɪˈoʊmə
+neon	ˈniɑn
 neonatal	ˌnioʊˈneɪtəɫ
 neonazi	ˌnioʊˈnɑtsi
 neonazis	ˌnioʊˈnɑtsiz
@@ -86291,6 +86286,7 @@ niblack	ˈnɪˌbɫæk
 niblett	ˈnɪbɫɪt
 niblock	ˈnɪˌbɫɑk
 nibs	ˈnɪbz
+nic	ˈnɪk
 nicandros	nɪˈkændɹoʊs
 nicaragua	ˌnɪkɝˈɑɡwə
 nicaragua's	ˌnɪkɝˈɑɡwəz
@@ -86674,6 +86670,7 @@ nist	ˈnɪst
 nistler	ˈnɪstɫɝ
 niswander	ˈnɪswɔndɝ
 niswonger	ˈnɪswɔŋɝ
+nit	ˈnɪt
 nita	ˈnitə
 nite	ˈnaɪt
 nithuekan	ˌnɪθwəˈkɑn
@@ -87929,6 +87926,7 @@ o'carroll	oʊˈkɛɹəɫ,oʊˈkæɹəɫ
 o'cilla	oʊˈsɪɫə
 o'clair	oʊˈkɫɝ
 o'clock	əˈkɫɑk
+oclock	əˈkɫɑk
 o'connell	oʊˈkɑnəɫ
 o'conner	oʊˈkɑnɝ
 o'conner's	oʊˈkɑnɝz
@@ -95763,6 +95761,7 @@ poorman	ˈpuɹmən
 poors	ˈpuɹz,ˈpɔɹz
 pooser	ˈpuzɝ
 poovey	ˈpuvi
+pop	ˈpɑp
 pop's	ˈpɑps
 popa	ˈpoʊpə
 poparelli	ˌpoʊpəˈɹɛɫi
@@ -99698,6 +99697,7 @@ rasterop	ˈɹæstɝˌɑp
 rasterops	ˈɹæstɝˌɑps
 rastetter	ˈɹeɪstɪtɝ
 rastus	ˈɹæstəs
+rat	ˈɹæt
 rat's	ˈɹæts
 rat-a-tat	ˈɹætəˈtæt
 rata	ˈɹætə
@@ -103368,6 +103368,7 @@ rinella	ɹɪˈnɛɫə
 riner	ˈɹaɪnɝ
 rines	ˈɹaɪnz
 riney	ˈɹaɪni
+ring	ˈɹɪŋ
 ring's	ˈɹɪŋz
 ring-around-the-rosy	ˈɹɪŋɝˈaʊnðɝˈoʊzi
 ringberg	ˈɹɪŋbɝɡ
@@ -111108,6 +111109,7 @@ siblings	ˈsɪbɫɪŋz
 sibson	ˈsɪbsən
 sibyl	ˈsɪbəɫ
 sibyll	ˈsɪbɪɫ
+sic	ˈsɪk
 sica	ˈsikə
 sicard	ˈsɪkɝd
 sichel	ˈsɪkəɫ
@@ -121289,6 +121291,7 @@ tibi	ˈtɪˌbi
 tibia	ˈtɪbiə,ˈtɪbjə
 tibidow	ˈtɪbidoʊ
 tiburon	ˈtibəˌɹɔn
+tic	ˈtɪk
 tice	ˈtaɪs
 ticer	ˈtaɪsɝ
 tichenor	ˈtɪkənɝ
@@ -121543,6 +121546,7 @@ tindol	ˈtɪndəɫ
 tine	ˈtaɪn
 tiner	ˈtaɪnɝ
 tines	ˈtaɪnz
+ting	ˈtɪŋ
 tinge	ˈtɪndʒ
 tinged	ˈtɪŋd
 tingen	ˈtɪŋən
@@ -122073,6 +122077,7 @@ toothy	ˈtuθi
 tootle	ˈtutəɫ
 toots	ˈtuts,ˈtʊts
 tootsie	ˈtutˈsi,ˈtʊtˈsi
+top	ˈtɔp,ˈtɑp
 top-down	ˈtɑpˈdaʊn
 top-secret	ˈtɑpˈsikɹət
 top-up	ˈtɑˌpəp
@@ -132138,6 +132143,7 @@ xylon	ˈzaɪɫən
 xylona	ˈzaɪɫənə
 xylophone	ˈzaɪɫəˌfoʊn
 xyvision	ˈzaɪˈvɪʒən
+Y	ˈwaɪ
 y'all	ˌjɔɫ
 y'know	jəˈnoʊ
 y's	ˈwaɪz
@@ -133757,3 +133763,55 @@ problem-solving	ˈpɹɑbɫəmˈsɑɫvɪŋ
 crewed	ˈkɹud
 e-learning	ˈiˌɫɝnɪŋ
 e-book	ˈiˌbʊk
+nlp	ˈɛn▁ˈɛɫ▁ˈpi
+IT	ˈaɪ▁ˈti
+kpi	ˈkeɪ▁ˈpi▁ˈaɪ
+fc	ˈɛf▁ˈsi
+BA	ˈbi▁ˈeɪ
+slo	ˈɛs▁ˈɛɫ▁ˈoʊ
+otp	ˈoʊ▁ˈti▁ˈpi
+PO	ˈpi▁ˈoʊ
+qa	ˈkju▁ˈeɪ
+sre	ˈɛs▁ˈɑɹ▁ˈi
+ux	ˈju▁ˈɛks
+UI	ˈju▁ˈaɪ
+dbo	ˈdi▁ˈbi▁ˈoʊ
+db	ˈdi▁ˈbi
+BO	ˈbi▁ˈoʊ
+sm	ˈɛs▁ˈɛm
+qrcode	ˈkju▁ˈɑɹ▁ˈkoʊd
+jsc	ˈdʒi▁ˈɛs▁ˈsi
+SA	ˈɛs▁ˈeɪ
+erp	ˈi▁ˈɑɹ▁ˈpi
+r&d	ˈɑɹ▁ˈænd▁ˈdi
+f&b	ˈɛf▁ˈænd▁ˈbi
+c&b	ˈsi▁ˈænd▁ˈbi
+r&b	ˈɑɹ▁ˈænd▁ˈbi
+p&l	ˈpi▁ˈænd▁ˈɛɫ
+q&a	ˈkju▁ˈænd▁ˈeɪ
+wesign	ˈwi▁ˈsaɪn
+hrm	ˈeɪtʃ▁ˈɑɹ▁ˈɛm
+asp	ˈeɪ▁ˈɛs▁ˈpi
+bankhub	ˈbæŋk▁ˈhəb
+jobday	ˈdʒɑb▁ˈdeɪ
+ocm	ˈoʊ▁ˈsi▁ˈɛm
+shortlink	ˈʃɔɹt▁ˈɫɪŋk
+aimarketing	ˈeɪˈaɪ▁ˈmɑɹkətɪŋ
+esign	ˈi▁ˈsaɪn
+invoicebot	ˈɪnvɔɪs▁ˈbɔt
+meinvoice	ˈmi▁ˈɪnvɔɪs
+eshop	ˈi▁ˈʃɑp
+nps	ˈɛn▁ˈpi▁ˈɛs
+salagov	ˈsɑɫə▁ˈɡəv
+mshop	ˈɛm▁ˈʃɑp
+mshopkeeper	ˈɛm▁ˈʃɑp▁ˈkipɝ
+cegov	ˈsi▁ˈɡəv
+taskgov	ˈtæsk▁ˈɡəv
+mtax	ˈɛm▁ˈtæks
+taskgo	ˈtæsk▁ˈɡoʊ
+jetpay	ˈdʒɛt▁ˈpeɪ
+fingov	ˈfɪn▁ˈɡəv
+sme	ˈɛs▁ˈɛm▁ˈi
+restab	ˈɹeɪz▁ˈtæb
+iot	ˈaɪ▁ˈoʊ▁ˈti
+fastapi	ˈfæst▁ˌeɪˌpiˈaɪ
