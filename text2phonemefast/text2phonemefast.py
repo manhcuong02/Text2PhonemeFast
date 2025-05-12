@@ -313,7 +313,9 @@ class Text2PhonemeFast:
             phones = [phoneme]
         else:
             phones = []
-            for word in text.split(" "):
+            words = text.split(" ")
+            words = [word for word in words if len(word) > 0]
+            for word in words:
                 phoneme = self.get_phoneme_from_dict(word, language)
                 if phoneme is not None:
                     phones.append(phoneme)
@@ -519,7 +521,7 @@ def demo():
 
     print(
         model.infer_sentence(
-            "Công nghệ AI , <lang='eng-us'>big data</lang> đang phát triển mạnh mẽ .",
+            "Công nghệ AI , <lang='eng-us'>big    data</lang> đang phát triển mạnh mẽ .  ",
             save_missing_phonemes=False,
         )
     )
