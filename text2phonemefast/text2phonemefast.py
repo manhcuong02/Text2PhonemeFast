@@ -8,8 +8,12 @@ from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
 
 # Constants
-G2P_DICT_BASE_URL: str = "https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
-CUSTOM_DICT_BASE_URL: str = "https://raw.githubusercontent.com/manhcuong02/Text2PhonemeFast/refs/heads/master/"
+G2P_DICT_BASE_URL: str = (
+    "https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
+)
+CUSTOM_DICT_BASE_URL: str = (
+    "https://raw.githubusercontent.com/manhcuong02/Text2PhonemeFast/refs/heads/master/"
+)
 DEFAULT_SEPARATE_TOKEN: str = "_"
 PHONEME_SEPARATOR: str = " ▁ "
 
@@ -55,8 +59,10 @@ class Text2PhonemeFast:
         self.segment_tool = Tokenizer()
 
         # Initialize G2P dictionary
-        self.language, self.g2p_dict_path = self._initialize_g2p_dictionary(g2p_dict_path, language)
-        
+        self.language, self.g2p_dict_path = self._initialize_g2p_dictionary(
+            g2p_dict_path, language
+        )
+
         self.phoneme_dict: Dict[str, Dict[str, List[str]]] = {}
         self.phoneme_dict[self.language] = self.load_g2p(self.g2p_dict_path)
 
@@ -64,21 +70,19 @@ class Text2PhonemeFast:
             self.phoneme_dict[sec_language] = self.load_g2p(path)
 
         self.missing_phonemes: list[dict] = []
-        
+
     def _initialize_g2p_dictionary(
-        self, 
-        g2p_dict_path: Optional[str], 
-        language: str
+        self, g2p_dict_path: Optional[str], language: str
     ) -> Tuple[str, str]:
         """Initialize the G2P dictionary for the specified language.
-        
+
         Args:
             g2p_dict_path (Optional[str]): Path to the G2P dictionary.
             language (str): Language code.
-            
+
         Returns:
             Tuple[str, str]: A tuple containing (language, g2p_dict_path).
-        
+
         Raises:
             ValueError: If the language is not supported.
         """
@@ -103,14 +107,14 @@ class Text2PhonemeFast:
                         + f" {CUSTOM_DICT_BASE_URL}"
                         + target_file
                     )
-                g2p_dict_path = os.path.join(target_dir, target_file) if target_dir else target_file
+                g2p_dict_path = (
+                    os.path.join(target_dir, target_file) if target_dir else target_file
+                )
             else:
                 if os.path.exists("./" + language + ".tsv"):
                     g2p_dict_path = "./" + language + ".tsv"
                 else:
-                    os.system(
-                        f"wget {G2P_DICT_BASE_URL}{language}.tsv"
-                    )
+                    os.system(f"wget {G2P_DICT_BASE_URL}{language}.tsv")
                     g2p_dict_path = "./" + language + ".tsv"
         else:
             if language is None or len(language) == 0:
@@ -121,7 +125,7 @@ class Text2PhonemeFast:
             raise ValueError(
                 f"Language {language} not supported. Please check the phoneme length dictionary."
             )
-            
+
         return language, g2p_dict_path
 
     def save_missing_phonemes(self):
@@ -188,7 +192,9 @@ class Text2PhonemeFast:
             for word_phone in list_words:
                 w_p = word_phone.split("\t")
                 if len(w_p) != 2:
-                    raise ValueError(f"Invalid format in G2P dictionary line: {word_phone}")
+                    raise ValueError(
+                        f"Invalid format in G2P dictionary line: {word_phone}"
+                    )
 
                 if "," not in w_p[1]:
                     phoneme_dict[w_p[0]] = [w_p[1]]
@@ -294,9 +300,11 @@ class Text2PhonemeFast:
         # Validate input parameters
         if not text:
             return "" if return_type == "string" else []
-            
+
         if return_type not in ["string", "list"]:
-            raise ValueError(f"Invalid return_type: {return_type}. Must be 'string' or 'list'")
+            raise ValueError(
+                f"Invalid return_type: {return_type}. Must be 'string' or 'list'"
+            )
         if language is None:
             language = self.language
         if language not in self.phoneme_dict:
