@@ -253,7 +253,7 @@ class Text2PhonemeFast:
         if save_missing_phonemes:
             self.save_missing_phonemes()
 
-    def get_phoneme_from_dict(self, text: str) -> Optional[str]:
+    def get_phoneme_from_dict(self, text: str, language) -> Optional[str]:
         """Look up phoneme for a given text in the G2P dictionary.
 
         This method searches for the exact text or its lowercase version in the phoneme dictionary
@@ -265,10 +265,10 @@ class Text2PhonemeFast:
         Returns:
             Optional[str]: The phoneme representation if found, or None if not found.
         """
-        if text in self.phoneme_dict[self.language]:
-            return self.phoneme_dict[self.language][text][0]
-        elif text.lower() in self.phoneme_dict[self.language]:
-            return self.phoneme_dict[self.language][text.lower()][0]
+        if text in self.phoneme_dict[language]:
+            return self.phoneme_dict[language][text][0]
+        elif text.lower() in self.phoneme_dict[language]:
+            return self.phoneme_dict[language][text.lower()][0]
         elif text in self.punctuation:
             return text
         return None
@@ -308,13 +308,13 @@ class Text2PhonemeFast:
         if language not in self.phoneme_dict:
             self.phoneme_dict[language] = {}
 
-        phoneme = self.get_phoneme_from_dict(text)
+        phoneme = self.get_phoneme_from_dict(text, language)
         if phoneme is not None:
             phones = [phoneme]
         else:
             phones = []
             for word in text.split(" "):
-                phoneme = self.get_phoneme_from_dict(word)
+                phoneme = self.get_phoneme_from_dict(word, language)
                 if phoneme is not None:
                     phones.append(phoneme)
                 else:
