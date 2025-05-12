@@ -212,7 +212,6 @@ class Text2PhonemeFast:
         input_file="",
         separate_syllable_token="_",
         output_file="",
-        batch_size=1,
         save_missing_phonemes=False,
     ):
         """Process a dataset file, converting text to phonemes.
@@ -225,7 +224,6 @@ class Text2PhonemeFast:
             separate_syllable_token (str): Token used to separate syllables in the input text.
                 Default: "_".
             output_file (str): Path to save the converted phoneme results.
-            batch_size (int): Processing batch size (currently not used). Default: 1.
             save_missing_phonemes (bool): Whether to save any missing phonemes encountered
                 during processing to the G2P dictionary. Default: False.
 
