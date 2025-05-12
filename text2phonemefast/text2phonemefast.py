@@ -1,11 +1,17 @@
 import os
 import re
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Tuple, Literal
 
 from segments import Tokenizer
 from tqdm import tqdm
 from transformers import AutoTokenizer, T5ForConditionalGeneration
 from unidecode import unidecode
+
+# Constants
+G2P_DICT_BASE_URL: str = "https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
+CUSTOM_DICT_BASE_URL: str = "https://raw.githubusercontent.com/manhcuong02/Text2PhonemeFast/refs/heads/master/"
+DEFAULT_SEPARATE_TOKEN: str = "_"
+PHONEME_SEPARATOR: str = " ▁ "
 
 # Import from the newly created file
 from .language_phoneme_limits import MAX_PHONEME_LENGTHS, DEFAULT_MAX_PHONEME_LENGTH
@@ -14,12 +20,12 @@ from .language_phoneme_limits import MAX_PHONEME_LENGTHS, DEFAULT_MAX_PHONEME_LE
 class Text2PhonemeFast:
     def __init__(
         self,
-        pretrained_g2p_model="charsiu/g2p_multilingual_byT5_small_100",
-        tokenizer="google/byt5-small",
-        language="vie-n",
+        pretrained_g2p_model: str = "charsiu/g2p_multilingual_byT5_small_100",
+        tokenizer: str = "google/byt5-small",
+        language: str = "vie-n",
         g2p_dict_path: Optional[str] = None,
-        device="cpu",
-        # sử dụng cho ngôn ngữ phụ được chỉ định trong language tag
+        device: str = "cpu",
+        # used for secondary languages specified in language tags
         secondary_language_dict: Dict[str, str] = {},
     ):
         """Initialize the Text2PhonemeFast model.
@@ -48,16 +54,64 @@ class Text2PhonemeFast:
         )
         self.segment_tool = Tokenizer()
 
+        # Initialize G2P dictionary
+        self.language, self.g2p_dict_path = self._initialize_g2p_dictionary(g2p_dict_path, language)
+        
+        self.phoneme_dict: Dict[str, Dict[str, List[str]]] = {}
+        self.phoneme_dict[self.language] = self.load_g2p(self.g2p_dict_path)
+
+        for sec_language, path in secondary_language_dict.items():
+            self.phoneme_dict[sec_language] = self.load_g2p(path)
+
+        self.missing_phonemes: list[dict] = []
+        
+    def _initialize_g2p_dictionary(
+        self, 
+        g2p_dict_path: Optional[str], 
+        language: str
+    ) -> Tuple[str, str]:
+        """Initialize the G2P dictionary for the specified language.
+        
+        Args:
+            g2p_dict_path (Optional[str]): Path to the G2P dictionary.
+            language (str): Language code.
+            
+        Returns:
+            Tuple[str, str]: A tuple containing (language, g2p_dict_path).
+        
+        Raises:
+            ValueError: If the language is not supported.
+        """
         if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
-            if os.path.exists("./" + language + ".tsv"):
-                g2p_dict_path = "./" + language + ".tsv"
+            if g2p_dict_path is not None and (
+                "unique" in g2p_dict_path or "mix" in g2p_dict_path
+            ):
+                # Get target directory
+                target_dir = os.path.dirname(g2p_dict_path)
+                target_file = os.path.basename(g2p_dict_path)
+
+                # Create target directory if it doesn't exist
+                if target_dir and not os.path.exists(target_dir):
+                    os.makedirs(target_dir, exist_ok=True)
+
+                # Download file and save to correct location
+                if target_dir:
+                    download_path = os.path.join(target_dir, target_file)
+                    os.system(
+                        "wget -O "
+                        + download_path
+                        + f" {CUSTOM_DICT_BASE_URL}"
+                        + target_file
+                    )
+                g2p_dict_path = os.path.join(target_dir, target_file) if target_dir else target_file
             else:
-                os.system(
-                    "wget https://raw.githubusercontent.com/lingjzhu/CharsiuG2P/main/dicts/"
-                    + language
-                    + ".tsv"
-                )
-                g2p_dict_path = "./" + language + ".tsv"
+                if os.path.exists("./" + language + ".tsv"):
+                    g2p_dict_path = "./" + language + ".tsv"
+                else:
+                    os.system(
+                        f"wget {G2P_DICT_BASE_URL}{language}.tsv"
+                    )
+                    g2p_dict_path = "./" + language + ".tsv"
         else:
             if language is None or len(language) == 0:
                 language = g2p_dict_path.split("/")[-1].split(".")[0]
@@ -67,17 +121,8 @@ class Text2PhonemeFast:
             raise ValueError(
                 f"Language {language} not supported. Please check the phoneme length dictionary."
             )
-
-        self.language = language
-
-        self.g2p_dict_path = g2p_dict_path
-        self.phoneme_dict = {}
-        self.phoneme_dict[self.language] = self.load_g2p(self.g2p_dict_path)
-
-        for sec_language, path in secondary_language_dict.items():
-            self.phoneme_dict[sec_language] = self.load_g2p(path)
-
-        self.missing_phonemes: list[dict] = []
+            
+        return language, g2p_dict_path
 
     def save_missing_phonemes(self):
         """
@@ -129,7 +174,7 @@ class Text2PhonemeFast:
 
         Raises:
             FileNotFoundError: If the specified file does not exist.
-            AssertionError: If a line in the file does not have exactly two elements.
+            ValueError: If a line in the file does not have exactly two elements.
         """
         if filepath is None:
             filepath = self.g2p_dict_path
@@ -142,7 +187,8 @@ class Text2PhonemeFast:
 
             for word_phone in list_words:
                 w_p = word_phone.split("\t")
-                assert len(w_p) == 2, print(w_p)
+                if len(w_p) != 2:
+                    raise ValueError(f"Invalid format in G2P dictionary line: {word_phone}")
 
                 if "," not in w_p[1]:
                     phoneme_dict[w_p[0]] = [w_p[1]]
@@ -227,7 +273,7 @@ class Text2PhonemeFast:
         self,
         text: str,
         language: Optional[str] = None,
-        return_type: str = "string",
+        return_type: Literal["string", "list"] = "string",
     ) -> Union[str, List[str]]:
         """Convert text to phoneme representation.
 
@@ -245,6 +291,12 @@ class Text2PhonemeFast:
             Union[str, List[str]]: Phoneme representation as a single string or a list of strings
                 depending on the return_type parameter.
         """
+        # Validate input parameters
+        if not text:
+            return "" if return_type == "string" else []
+            
+        if return_type not in ["string", "list"]:
+            raise ValueError(f"Invalid return_type: {return_type}. Must be 'string' or 'list'")
         if language is None:
             language = self.language
         if language not in self.phoneme_dict:
@@ -335,9 +387,9 @@ class Text2PhonemeFast:
 
     def infer_sentence(
         self,
-        sentence="",
-        separate_syllable_token="_",
-        save_missing_phonemes=False,
+        sentence: str = "",
+        separate_syllable_token: str = DEFAULT_SEPARATE_TOKEN,
+        save_missing_phonemes: bool = False,
         language: Optional[str] = None,
     ) -> str:
         """Convert a sentence to phoneme representation.
@@ -359,6 +411,9 @@ class Text2PhonemeFast:
             str: The phoneme representation of the input sentence, with phonemes separated
                 by the " ▁ " token.
         """
+        # Validate input parameters
+        if not sentence:
+            return ""
         list_words = self.smart_split_with_language_tag(sentence)
 
         list_phones = []
