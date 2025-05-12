@@ -428,7 +428,7 @@ class Text2PhonemeFast:
             list_words[i] = list_words[i].replace(separate_syllable_token, " ")
 
             # normalize apostrophes for english words
-            list_words[i] = list_words[i].replace("'", "'")
+            list_words[i] = list_words[i].replace("’", "'")
 
             if len(list_words[i]) == 0:
                 continue
