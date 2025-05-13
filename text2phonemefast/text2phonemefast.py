@@ -87,29 +87,29 @@ class Text2PhonemeFast:
             ValueError: If the language is not supported.
         """
         if g2p_dict_path is None or os.path.exists(g2p_dict_path) is False:
-            if g2p_dict_path is not None and (
-                "unique" in g2p_dict_path or "mix" in g2p_dict_path
-            ):
-                # Get target directory
+            if g2p_dict_path is not None:
+                # Get target directory and filename
                 target_dir = os.path.dirname(g2p_dict_path)
                 target_file = os.path.basename(g2p_dict_path)
-
-                # Create target directory if it doesn't exist
+                
+                # Create target directory if it doesn't exist and not empty
                 if target_dir and not os.path.exists(target_dir):
                     os.makedirs(target_dir, exist_ok=True)
-
-                # Download file and save to correct location
-                if target_dir:
-                    download_path = os.path.join(target_dir, target_file)
-                    os.system(
-                        "wget -O "
-                        + download_path
-                        + f" {CUSTOM_DICT_BASE_URL}"
-                        + target_file
-                    )
-                g2p_dict_path = (
-                    os.path.join(target_dir, target_file) if target_dir else target_file
-                )
+                
+                # Determine download path (using current dir if target_dir is empty)
+                download_path = os.path.join(target_dir, target_file) if target_dir else target_file
+                
+                # Determine the URL source based on file name
+                if "unique" in target_file or "mix" in target_file:
+                    url_source = CUSTOM_DICT_BASE_URL
+                else:
+                    url_source = G2P_DICT_BASE_URL
+                
+                # Download file from appropriate URL
+                os.system(f"wget -O {download_path} {url_source}{target_file}")
+                
+                # Update g2p_dict_path to the full path of the downloaded file
+                g2p_dict_path = download_path
             else:
                 if os.path.exists("./" + language + ".tsv"):
                     g2p_dict_path = "./" + language + ".tsv"
