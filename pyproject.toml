@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text2phonemefast"
+version = "0.2.1"
+description = "A Python Library to convert text to phoneme sequence fast - used for XPhoneBERT (Forked and enhanced from original work by Linh The Nguyen)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "Nguyễn Mạnh Cường", email = "manhcuong17072002@gmail.com"},
+]
+maintainers = [
+    {name = "Nguyễn Mạnh Cường", email = "manhcuong17072002@gmail.com"},
+]
+keywords = ["text2phonemefast"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "transformers==4.51.3",
+    "tqdm==4.67.1",
+    "segments==2.3.0",
+    "unidecode==1.4.0",
+    "torch==2.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/manhcuong02/Text2PhonemeFast"
+"Bug Tracker" = "https://github.com/manhcuong02/Text2PhonemeFast/issues"
+
+[tool.setuptools]
+packages = ["text2phonemefast"]
